@@ -1,0 +1,47 @@
+export type BlockType = 'start' | 'end' | 'process' | 'condition' | 'loop' | 'input' | 'output' | 'function' | 'comment' | 'connector';
+
+export interface ParsedLine {
+  content: string;
+  indentLevel: number;
+  blockType: BlockType;
+  isClosing?: boolean;
+}
+
+export interface BlockPosition {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface Connection {
+  from: number;
+  to: number;
+  type: 'default' | 'yes' | 'no' | 'loop-back';
+}
+
+export interface DiagramBlock extends ParsedLine {
+  index: number;
+  position: BlockPosition;
+  connections: Connection[];
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  pseudocode: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+export interface ExportOptions {
+  format: 'png' | 'svg' | 'pdf';
+  scale?: number;
+  backgroundColor?: string;
+}
