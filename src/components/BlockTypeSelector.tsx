@@ -16,7 +16,9 @@ const blockTypes: { type: BlockType; label: string; description: string }[] = [
   { type: 'loop', label: 'Loop', description: 'While/for loop' },
   { type: 'input', label: 'Input', description: 'User input' },
   { type: 'output', label: 'Output', description: 'Display output' },
-  { type: 'function', label: 'Function', description: 'Function call' },
+  { type: 'function', label: 'Function Call', description: 'Call a function' },
+  { type: 'function-def', label: 'Function Definition', description: 'Define a function' },
+  { type: 'return', label: 'Return', description: 'Return from function' },
   { type: 'comment', label: 'Comment', description: 'Explanatory note' },
   { type: 'connector', label: 'Connector', description: 'Connect to another part' }
 ];

@@ -1,4 +1,4 @@
-export type BlockType = 'start' | 'end' | 'process' | 'condition' | 'loop' | 'input' | 'output' | 'function' | 'comment' | 'connector';
+export type BlockType = 'start' | 'end' | 'process' | 'condition' | 'loop' | 'input' | 'output' | 'function' | 'function-def' | 'return' | 'comment' | 'connector';
 
 export interface ParsedLine {
   content: string;
@@ -18,12 +18,21 @@ export interface Connection {
   from: number;
   to: number;
   type: 'default' | 'yes' | 'no' | 'loop-back';
+  depth?: number; // For nested loop visualization
 }
 
 export interface DiagramBlock extends ParsedLine {
   index: number;
   position: BlockPosition;
   connections: Connection[];
+  functionName?: string; // For function call blocks
+}
+
+export interface FunctionDefinition {
+  name: string;
+  parameters: string[];
+  blocks: DiagramBlock[];
+  originalStartIndex: number;
 }
 
 export interface Project {

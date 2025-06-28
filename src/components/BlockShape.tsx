@@ -72,6 +72,25 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
         </g>
       );
       
+    case 'function-def':
+      // Rectangle with rounded corners and double top border
+      return (
+        <g>
+          <rect x={x} y={y} width={width} height={height} rx="8" ry="8" fill={fillColor} />
+          <line x1={x + 10} y1={y + 8} x2={x + width - 10} y2={y + 8} stroke="white" strokeWidth="2" />
+          <line x1={x + 10} y1={y + 12} x2={x + width - 10} y2={y + 12} stroke="white" strokeWidth="2" />
+        </g>
+      );
+      
+    case 'return':
+      // Inverted trapezoid (wider at bottom)
+      return (
+        <polygon
+          points={`${x + 20},${y} ${x + width - 20},${y} ${x + width},${y + height} ${x},${y + height}`}
+          fill={fillColor}
+        />
+      );
+      
     case 'comment':
       // Dashed rectangle
       return (

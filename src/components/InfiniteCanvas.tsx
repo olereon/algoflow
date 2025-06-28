@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useState, useRef, useCallback, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { DiagramBlock } from '../types';
 import { DiagramBlock as DiagramBlockComponent } from './DiagramBlock';
 import { Connection } from './Connection';
@@ -18,12 +18,57 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
     const [viewBox, setViewBox] = useState({ x: -400, y: -200, width: 1200, height: 800 });
     const [isPanning, setIsPanning] = useState(false);
     const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
+    const [isInitialized, setIsInitialized] = useState(false);
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(ref, () => ({
       getSvgElement: () => svgRef.current
     }));
+
+    // Auto-fit the flowchart when blocks change or component mounts
+    useEffect(() => {
+      if (blocks.length === 0 || !containerRef.current || isInitialized) return;
+
+      // Calculate bounds of all blocks
+      const padding = 100;
+      const minX = Math.min(...blocks.map(b => b.position.x)) - padding;
+      const maxX = Math.max(...blocks.map(b => b.position.x + b.position.width)) + padding;
+      const minY = Math.min(...blocks.map(b => b.position.y)) - padding;
+      const maxY = Math.max(...blocks.map(b => b.position.y + b.position.height)) + padding;
+
+      const contentWidth = maxX - minX;
+      const contentHeight = maxY - minY;
+
+      // Get container dimensions
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const containerHeight = containerRect.height;
+
+      // Calculate scale to fit content in container with some padding
+      const scaleX = containerWidth / contentWidth;
+      const scaleY = containerHeight / contentHeight;
+      const scale = Math.min(scaleX, scaleY, 1); // Don't zoom in beyond 100%
+
+      // Calculate final viewBox dimensions
+      const finalWidth = containerWidth / scale;
+      const finalHeight = containerHeight / scale;
+
+      // Center the content
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const finalX = centerX - finalWidth / 2;
+      const finalY = centerY - finalHeight / 2;
+
+      setViewBox({
+        x: finalX,
+        y: finalY,
+        width: finalWidth,
+        height: finalHeight
+      });
+
+      setIsInitialized(true);
+    }, [blocks, isInitialized]);
 
     const handleMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
       if (e.button === 0) { // Left mouse button

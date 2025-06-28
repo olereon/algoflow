@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Project, BlockType } from '../types';
+import { Project, BlockType, FunctionDefinition } from '../types';
 import { InfiniteCanvasRef } from '../components/InfiniteCanvas';
 import { DEFAULT_PROJECT } from '../constants';
-import { parsePseudocode } from '../utils/parser';
+import { parsePseudocode, extractFunctions } from '../utils/parser';
 import { validatePseudocode } from '../utils/validation';
 import { layoutBlocks } from '../utils/diagram';
 import { exportToPng } from '../utils/export';
@@ -18,6 +18,8 @@ export function useAlgorithmVisualizer() {
   const [selectorPosition, setSelectorPosition] = useState({ x: 0, y: 0 });
   const [selectedLineIndex, setSelectedLineIndex] = useState<number | null>(null);
   const [selectedBlock, setSelectedBlock] = useState<number | undefined>();
+  const [selectedFunction, setSelectedFunction] = useState<FunctionDefinition | null>(null);
+  const [showFunctionPopup, setShowFunctionPopup] = useState(false);
   
   const canvasRef = useRef<InfiniteCanvasRef>(null);
   
@@ -27,9 +29,16 @@ export function useAlgorithmVisualizer() {
   }, []);
   
   // Parse and validate pseudocode
-  const parsedLines = parsePseudocode(pseudocode);
+  const { mainFlow, functions } = extractFunctions(pseudocode);
+  const parsedLines = parsePseudocode(mainFlow);
   const validation = validatePseudocode(parsedLines);
   const blocks = layoutBlocks(parsedLines);
+  
+  // Process function definitions with their own layout
+  const processedFunctions = functions.map(func => ({
+    ...func,
+    blocks: layoutBlocks(func.blocks)
+  }));
   
   // Handle line click in editor
   const handleLineClick = useCallback((lineIndex: number, event: React.MouseEvent) => {
@@ -54,8 +63,25 @@ export function useAlgorithmVisualizer() {
   
   // Handle block click
   const handleBlockClick = useCallback((index: number) => {
+    const block = blocks[index];
+    
+    // Check if this is a function call block
+    if (block && block.blockType === 'function') {
+      // Extract function name from the content
+      const match = block.content.match(/call\s+(\w+)/i);
+      if (match) {
+        const functionName = match[1];
+        const functionDef = processedFunctions.find(f => f.name.toLowerCase() === functionName.toLowerCase());
+        if (functionDef) {
+          setSelectedFunction(functionDef);
+          setShowFunctionPopup(true);
+          return;
+        }
+      }
+    }
+    
     setSelectedBlock(selectedBlock === index ? undefined : index);
-  }, [selectedBlock]);
+  }, [selectedBlock, blocks, processedFunctions]);
 
   // Export to PNG
   const handleExport = useCallback(async () => {
@@ -139,6 +165,10 @@ export function useAlgorithmVisualizer() {
     parsedLines,
     validation,
     blocks,
+    functions: processedFunctions,
+    selectedFunction,
+    showFunctionPopup,
+    setShowFunctionPopup,
     handleLineClick,
     handleBlockTypeSelect,
     handleExport,

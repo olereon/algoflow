@@ -14,12 +14,11 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
   const { width, height, paddingY } = BLOCK_DIMENSIONS;
   
   let currentY = paddingY;
-  const indentWidth = 300;
+  const indentWidth = 250; // Reduced for better nested loop visibility
   const centerX = 400; // Center alignment for main flow
   
   // First pass: create blocks with positions
   let startBlockX: number | null = null;
-  let maxY = paddingY;
   
   parsedLines.forEach((line, index) => {
     // Calculate x position for better alignment
@@ -54,22 +53,24 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
       connections: []
     });
     
-    // Track maximum Y position for END block placement
-    maxY = currentY + height;
     
     // Add extra spacing for better visual separation
     currentY += height + paddingY + (line.blockType === 'end' ? paddingY * 2 : 0);
   });
   
-  // Second pass: Ensure END block is at the bottom
-  blocks.forEach((block) => {
-    if (block.blockType === 'end') {
-      // Add extra spacing to ensure END is below everything else
-      if (block.position.y < maxY + paddingY) {
-        block.position.y = maxY + paddingY * 2;
-      }
-    }
-  });
+  // Second pass: Place END block below the lowest non-END block
+  const endBlocks = blocks.filter(block => block.blockType === 'end');
+  const nonEndBlocks = blocks.filter(block => block.blockType !== 'end');
+  
+  if (endBlocks.length > 0 && nonEndBlocks.length > 0) {
+    // Find the lowest Y position among non-END blocks
+    const lowestY = Math.max(...nonEndBlocks.map(block => block.position.y + block.position.height));
+    
+    // Place END blocks just below the lowest block
+    endBlocks.forEach(endBlock => {
+      endBlock.position.y = lowestY + paddingY;
+    });
+  }
   
   // Third pass: analyze control flow structure
   const analyzeControlFlow = (): Map<number, ControlFlowContext> => {
@@ -136,16 +137,20 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
           parentContext: contextStack[contextStack.length - 1]
         };
         
-        // Find end of loop
+        // Find end of loop - look for decrease in indentation
         let loopEndIndex = index;
+        let currentIndent = block.indentLevel;
+        
         for (let i = index + 1; i < blocks.length; i++) {
-          if (blocks[i].indentLevel < block.indentLevel) {
+          // Check if we've exited the loop (lower indentation)
+          if (blocks[i].indentLevel < currentIndent) {
             loopEndIndex = i - 1;
             break;
           }
-        }
-        if (loopEndIndex === index) {
-          loopEndIndex = blocks.length - 1;
+          // If we reach the end, the last block at same or higher indent is the end
+          if (i === blocks.length - 1 && blocks[i].indentLevel >= currentIndent) {
+            loopEndIndex = i;
+          }
         }
         
         context.endIndex = loopEndIndex;
@@ -223,12 +228,23 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
         connections.push({ from: index, to: index + 1, type: 'default' });
       }
       
-      // Add loop-back connection
+      // Add loop-back connection with depth information
       if (context && context.endIndex !== undefined && context.endIndex > index) {
+        // Calculate loop nesting depth
+        let depth = 0;
+        let currentContext = context.parentContext;
+        while (currentContext) {
+          if (currentContext.type === 'loop') {
+            depth++;
+          }
+          currentContext = currentContext.parentContext;
+        }
+        
         blocks[context.endIndex].connections.push({ 
           from: context.endIndex, 
           to: index, 
-          type: 'loop-back' 
+          type: 'loop-back',
+          depth: depth
         });
       }
       

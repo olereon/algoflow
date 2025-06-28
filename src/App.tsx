@@ -4,6 +4,7 @@ import { Editor } from './components/Editor';
 import { InfiniteCanvas } from './components/InfiniteCanvas';
 import { Toolbar } from './components/Toolbar';
 import { BlockTypeSelector } from './components/BlockTypeSelector';
+import { FunctionPopup } from './components/FunctionPopup';
 
 export default function App() {
   const {
@@ -23,6 +24,9 @@ export default function App() {
     selectedBlock,
     validation,
     blocks,
+    selectedFunction,
+    showFunctionPopup,
+    setShowFunctionPopup,
     handleLineClick,
     handleBlockClick,
     handleBlockTypeSelect,
@@ -152,6 +156,13 @@ export default function App() {
             setShowBlockSelector(false);
           }}
           position={selectorPosition}
+        />
+      )}
+
+      {showFunctionPopup && selectedFunction && (
+        <FunctionPopup
+          functionDef={selectedFunction}
+          onClose={() => setShowFunctionPopup(false)}
         />
       )}
     </div>

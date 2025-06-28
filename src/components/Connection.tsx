@@ -47,15 +47,23 @@ export const Connection: React.FC<ConnectionProps> = ({ connection, blocks }) =>
   
   // For loop-back connections
   if (connection.type === 'loop-back') {
-    const loopOffset = 60;
+    // Use different offsets based on nesting depth
+    const baseOffset = 60;
+    const depthOffset = (connection.depth || 0) * 40;
+    const loopOffset = baseOffset + depthOffset;
+    
     const loopX = Math.min(fromBlock.position.x, toBlock.position.x) - loopOffset;
     const path = `M ${startX} ${startY} L ${startX} ${startY + 30} L ${loopX} ${startY + 30} L ${loopX} ${endY - 30} L ${endX} ${endY - 30} L ${endX} ${endY}`;
+    
+    // Use different colors for different nesting levels
+    const colors = ['#e11d48', '#dc2626', '#b91c1c', '#991b1b'];
+    const color = colors[Math.min(connection.depth || 0, colors.length - 1)];
     
     return (
       <g>
         <defs>
           <marker
-            id="arrowhead-loop"
+            id={`arrowhead-loop-${connection.depth || 0}`}
             markerWidth="10"
             markerHeight="10"
             refX="9"
@@ -64,18 +72,30 @@ export const Connection: React.FC<ConnectionProps> = ({ connection, blocks }) =>
           >
             <polygon
               points="0 0, 10 3, 0 6"
-              fill="#e11d48"
+              fill={color}
             />
           </marker>
         </defs>
         <path
           d={path}
           fill="none"
-          stroke="#e11d48"
+          stroke={color}
           strokeWidth="2"
           strokeDasharray="8,4"
-          markerEnd="url(#arrowhead-loop)"
+          markerEnd={`url(#arrowhead-loop-${connection.depth || 0})`}
         />
+        {connection.depth !== undefined && connection.depth > 0 && (
+          <text
+            x={loopX - 15}
+            y={(startY + endY) / 2}
+            fill={color}
+            fontSize="10"
+            fontWeight="bold"
+            textAnchor="middle"
+          >
+            L{connection.depth + 1}
+          </text>
+        )}
       </g>
     );
   }
