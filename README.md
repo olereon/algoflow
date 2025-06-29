@@ -1,6 +1,6 @@
 # Algorithm Visualizer
 
-A powerful, intuitive tool for converting natural language pseudocode into professional flowcharts. Bridge the gap between algorithm design and visual documentation with intelligent block detection and real-time visualization.
+A powerful, intuitive tool for converting natural language pseudocode into professional flowcharts with advanced conditional logic support. Bridge the gap between algorithm design and visual documentation with intelligent block detection, multi-way conditional structures, and real-time visualization.
 
 ![Algorithm Visualizer Demo](https://via.placeholder.com/800x400/4CAF50/FFFFFF?text=Algorithm+Visualizer+Demo)
 
@@ -98,21 +98,27 @@ suggestBlockType(text) {
 #### 🎨 Visual Block Types
 | Block Type | Shape | Color | Usage |
 |------------|-------|-------|-------|
-| Start/End | Oval | Green/Red | Algorithm boundaries |
+| Start/End | Rounded Rectangle | Green/Red | Algorithm boundaries |
 | Process | Rectangle | Blue | General processing steps |
-| Input | Parallelogram | Orange | Data input operations |
-| Output | Parallelogram | Purple | Data output operations |
-| IF Statement | Hexagon | Dark Blue | Conditional logic |
-| While Loop | Rounded Rectangle | Orange | Condition-based iteration |
-| For Loop | Trapezoid | Green | Count-based iteration |
-| Function Call | Rectangle | Pink | External function execution |
-| Variable | Small Hexagon | Green | Variable operations |
+| Input/Output | Parallelogram | Cyan/Pink | Data input/output operations |
+| Condition | Diamond | Orange | IF statements and conditionals |
+| Else-If | Diamond | Orange Variant | ELSE IF conditional logic |
+| Switch | Octagon | Lime Green | Switch statement blocks |
+| Case | Trapezoid | Dark Green | Case statement options |
+| Loop | Hexagon | Purple | While/For loop structures |
+| Function Call | Rectangle + Lines | Indigo | External function execution |
+| Function Definition | Rounded + Border | Indigo | Function definitions |
+| Return | Inverted Trapezoid | Purple | Function return statements |
+| Comment | Dashed Rectangle | Gray | Algorithm documentation |
+| Connector | Circle | Purple | Flow connectors |
 
 #### 🔄 Advanced Flow Logic
-- **Yes/No Branching**: Proper diamond shapes for decision points
-- **Loop Differentiation**: While (solid lines) vs For (dashed lines) loop-backs
-- **Single End Point**: All terminating paths lead to one "End Algorithm" block
-- **Right-Angle Connections**: Professional geometric routing (no curves)
+- **Enhanced Conditional Logic**: Full support for IF/ELSE IF/ELSE chains with cascading layout
+- **Smart Content Positioning**: Output blocks positioned directly below their parent conditionals
+- **Optimized Connection Routing**: YES arrows flow down, NO arrows branch right
+- **Multi-way Branching**: Switch/case statements with proper case routing
+- **Loop Visualization**: Color-coded loop-back arrows with depth indicators
+- **Professional Styling**: Right-angle connections with no curves or duplicate arrows
 
 #### 💾 Project Management
 - **Save/Load Projects**: Persistent storage with project naming
@@ -152,17 +158,24 @@ suggestBlockType(text) {
 - [x] Natural language pseudocode parsing
 - [x] Intelligent block type detection
 - [x] Real-time flowchart generation
-- [x] All 9 block types with proper shapes and colors
+- [x] All 14 block types with professional shapes and colors
 - [x] Save/load project functionality
 - [x] Download capabilities (PNG export)
 
+**Enhanced Conditional Logic (100% Complete - NEW)**
+- [x] Multi-way IF/ELSE IF/ELSE chain support
+- [x] Cascading layout with proper positioning
+- [x] Content blocks aligned below parent conditionals
+- [x] Switch/case statement visualization
+- [x] Simplified connection algorithm eliminating duplicates
+
 **Advanced Visualization (100% Complete)**
-- [x] Yes/No branching for conditionals
-- [x] While vs For loop differentiation
-- [x] Single end point routing
-- [x] Right-angle connections (no curves)
-- [x] Proper horizontal space utilization
-- [x] Professional styling and layout
+- [x] Enhanced YES/NO branching with optimized label positioning
+- [x] Loop visualization with depth indicators and color coding
+- [x] Function definition extraction and popup display
+- [x] Interactive movable function windows
+- [x] Right-angle connections with professional styling
+- [x] Infinite canvas with pan/zoom and auto-fit
 
 **User Experience (100% Complete)**
 - [x] Split-pane interface
@@ -182,12 +195,13 @@ suggestBlockType(text) {
 ### 🔧 Known Issues & Limitations
 
 **Minor Issues**
-- Complex nested conditions may require manual block type adjustment
 - Very long text in blocks may be truncated with ellipsis
-- Loop-back detection relies on specific "end loop" phrasing
+- Complex deeply nested structures may require manual layout adjustment
+- Function parameter parsing relies on specific syntax patterns
 
 **Browser Compatibility**
 - Tested on Chrome, Firefox, Safari, Edge (latest versions)
+- Full functionality requires modern browser with ES6+ support
 - SVG export may have minor rendering differences across browsers
 
 ## 🚧 Future Development Roadmap
@@ -205,10 +219,10 @@ suggestBlockType(text) {
   - Parameter and return value display
   - Function call mapping
 
-- [ ] **Enhanced Conditional Logic**
-  - Multi-way IF-ELSE chains
-  - Switch/case statement support
-  - Nested conditional handling
+- [x] **Enhanced Conditional Logic** ✅ **COMPLETED**
+  - Multi-way IF-ELSE chains with cascading layout
+  - Switch/case statement support with proper visualization
+  - Nested conditional handling with smart positioning
 
 #### 📱 Improved User Experience
 - [ ] **Advanced Text Editor**
@@ -355,21 +369,33 @@ Display "Done"::
 End algorithm::
 ```
 
-### Complex Algorithm with Conditions
+### Complex Algorithm with Enhanced Conditional Logic
 ```
-Start the algorithm::
-Declare variable age::
-Get user input for age::
-If age is less than 18 then::
-  Display "Minor"::
-  End algorithm::
-End if condition::
-If age is greater than 65 then::
-  Display "Senior"::
+Start::
+Input grade::
+If grade >= 90::
+  Output "A"::
+Else if grade >= 80::
+  Output "B"::
 Else::
-  Display "Adult"::
-End if condition::
-End algorithm::
+  Output "C"::
+End if::
+End::
+```
+
+### Switch Statement Example
+```
+Start::
+Input day number::
+Switch day::
+Case 1::
+  Output "Monday"::
+Case 2::
+  Output "Tuesday"::
+Default::
+  Output "Invalid day"::
+End switch::
+End::
 ```
 
 ### Algorithm with Functions

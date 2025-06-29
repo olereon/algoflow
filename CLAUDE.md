@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AlgoFlow is a React-based algorithm visualizer that converts natural language pseudocode into professional flowcharts. It uses TypeScript, Vite, and Tailwind CSS with advanced interactive features including nested loops, function definitions, and movable popup windows.
+AlgoFlow is a React-based algorithm visualizer that converts natural language pseudocode into professional flowcharts. It uses TypeScript, Vite, and Tailwind CSS with advanced conditional logic visualization, nested loop support, function definitions, and interactive movable popup windows.
 
 ## Commands
 
@@ -58,6 +58,13 @@ src/
 
 ### Advanced Features
 
+#### Enhanced Conditional Logic (NEW)
+- **Multi-way IF-ELSE chains**: Support for IF/ELSE IF/ELSE structures with proper cascading layout
+- **Cascading positioning**: ELSE IF and ELSE blocks positioned progressively to the right
+- **Proper content alignment**: Output blocks positioned directly below their parent conditional blocks
+- **Smart connection routing**: YES arrows go down, NO arrows branch right to next condition
+- **Simplified connection logic**: Eliminates duplicate arrows for clean, professional flowcharts
+
 #### Interactive Function Calls
 - Function definitions automatically extracted from main flow
 - Clickable function call blocks open movable popup windows
@@ -79,18 +86,22 @@ src/
 - Compact, professional appearance
 
 ### Core Features
-1. **Advanced Pseudocode Parsing**: Function extraction with parameter detection
-2. **12 Block Types**: start, end, process, condition, loop, input, output, function, function-def, return, comment, connector
-3. **Smart Detection**: Context-aware block type suggestions with keyword patterns
-4. **Project Management**: Save/load with localStorage persistence
-5. **Export**: PNG generation with white background
-6. **Interactive Canvas**: Pan, zoom, and auto-fit functionality
-7. **Function Definitions**: Separate popup display with movable windows
+1. **Enhanced Conditional Logic**: Multi-way IF/ELSE IF/ELSE chains with proper cascading layout
+2. **Advanced Pseudocode Parsing**: Function extraction with parameter detection
+3. **14 Block Types**: start, end, process, condition, else-if, switch, case, loop, input, output, function, function-def, return, comment, connector
+4. **Smart Detection**: Context-aware block type suggestions with keyword patterns
+5. **Project Management**: Save/load with localStorage persistence
+6. **Export**: PNG generation with white background
+7. **Interactive Canvas**: Pan, zoom, and auto-fit functionality
+8. **Function Definitions**: Separate popup display with movable windows
 
 ### Block Types and Shapes
 - **Start/End**: Rounded rectangles (green/red)
 - **Process**: Standard rectangles (blue)
-- **Condition**: Diamond shapes (orange)  
+- **Condition**: Diamond shapes (orange)
+- **Else-If**: Diamond shapes (orange variant)
+- **Switch**: Octagon shapes (lime green)
+- **Case**: Trapezoid shapes (darker green)
 - **Loop**: Hexagons (purple)
 - **Input/Output**: Parallelograms (cyan/pink)
 - **Function Call**: Rectangle with double vertical lines (indigo)
@@ -101,9 +112,10 @@ src/
 
 ### Connection System
 - **Default**: Gray orthogonal arrows for sequential flow
-- **Conditional**: Green (YES) and red (NO) labeled arrows
+- **Conditional**: Green (YES) and red (NO) labeled arrows with optimized positioning
+- **Case**: Green labeled arrows for switch/case statements
 - **Loop-back**: Dashed red arrows with depth-based offsets
-- **All connections**: Right-angle joints, no curves
+- **All connections**: Right-angle joints, no curves, simplified routing logic
 
 ### State Management
 - React hooks for local component state
