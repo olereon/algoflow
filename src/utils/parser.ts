@@ -35,14 +35,17 @@ export function parsePseudocode(pseudocode: string): ParsedLine[] {
     // Determine block type
     const blockType = detectBlockType(content);
     
-    // Check if it's a closing statement (ELSE should be at same level as IF)
-    const isClosing = /^(else|end)/i.test(content);
+    // Check if it's a closing statement (ELSE, ELSE IF should be at same level as IF)
+    const isClosing = /^(else|end|case|default)/i.test(content);
     
     // Handle indentation
-    if (isClosing && content.toLowerCase().startsWith('else')) {
-      // ELSE should be at the same level as its corresponding IF
-      // Pop one level before processing
-      if (currentIndentLevel > 0) {
+    if (isClosing && (content.toLowerCase().startsWith('else') || /^(case|default)/i.test(content))) {
+      // ELSE/ELSE IF/CASE should be at the same level as their corresponding IF/SWITCH
+      // Pop one level before processing for ELSE, but not for ELSE IF
+      if (content.toLowerCase().startsWith('else') && !content.toLowerCase().includes('if') && currentIndentLevel > 0) {
+        currentIndentLevel--;
+      } else if (/^(case|default)/i.test(content) && currentIndentLevel > 0) {
+        // CASE blocks should align with SWITCH
         currentIndentLevel--;
       }
     } else if (leadingSpaces > indentStack[indentStack.length - 1]) {

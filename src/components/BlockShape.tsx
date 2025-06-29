@@ -31,7 +31,8 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
       );
       
     case 'condition':
-      // Diamond
+    case 'else-if': {
+      // Diamond (same shape for IF and ELSE IF)
       const cx = x + width / 2;
       const cy = y + height / 2;
       return (
@@ -40,9 +41,31 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
           fill={fillColor}
         />
       );
+    }
+      
+    case 'switch': {
+      // Octagon (like diamond but with more sides)
+      const cut = 15; // Corner cut amount
+      return (
+        <polygon
+          points={`${x + cut},${y} ${x + width - cut},${y} ${x + width},${y + cut} ${x + width},${y + height - cut} ${x + width - cut},${y + height} ${x + cut},${y + height} ${x},${y + height - cut} ${x},${y + cut}`}
+          fill={fillColor}
+        />
+      );
+    }
+      
+    case 'case': {
+      // Trapezoid (wider at top)
+      return (
+        <polygon
+          points={`${x},${y} ${x + width},${y} ${x + width - 20},${y + height} ${x + 20},${y + height}`}
+          fill={fillColor}
+        />
+      );
+    }
       
     case 'input':
-    case 'output':
+    case 'output': {
       // Parallelogram
       const skew = 20;
       return (
@@ -51,8 +74,9 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
           fill={fillColor}
         />
       );
+    }
       
-    case 'loop':
+    case 'loop': {
       // Hexagon
       const indent = 20;
       return (
@@ -61,8 +85,9 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
           fill={fillColor}
         />
       );
+    }
       
-    case 'function':
+    case 'function': {
       // Rectangle with double vertical lines
       return (
         <g>
@@ -71,8 +96,9 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
           <line x1={x + width - 10} y1={y} x2={x + width - 10} y2={y + height} stroke="white" strokeWidth="2" />
         </g>
       );
+    }
       
-    case 'function-def':
+    case 'function-def': {
       // Rectangle with rounded corners and double top border
       return (
         <g>
@@ -81,8 +107,9 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
           <line x1={x + 10} y1={y + 12} x2={x + width - 10} y2={y + 12} stroke="white" strokeWidth="2" />
         </g>
       );
+    }
       
-    case 'return':
+    case 'return': {
       // Inverted trapezoid (wider at bottom)
       return (
         <polygon
@@ -90,8 +117,9 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
           fill={fillColor}
         />
       );
+    }
       
-    case 'comment':
+    case 'comment': {
       // Dashed rectangle
       return (
         <rect
@@ -105,8 +133,9 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
           strokeWidth="2"
         />
       );
+    }
       
-    case 'connector':
+    case 'connector': {
       // Circle
       const radius = Math.min(width, height) / 2;
       return (
@@ -117,6 +146,7 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
           fill={fillColor}
         />
       );
+    }
       
     default:
       // Process block - regular rectangle

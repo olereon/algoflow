@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Project, BlockType, FunctionDefinition } from '../types';
+import { Project, FunctionDefinition } from '../types';
 import { InfiniteCanvasRef } from '../components/InfiniteCanvas';
 import { DEFAULT_PROJECT } from '../constants';
 import { parsePseudocode, extractFunctions } from '../utils/parser';
@@ -51,7 +51,7 @@ export function useAlgorithmVisualizer() {
   }, [pseudocode]);
   
   // Handle block type selection
-  const handleBlockTypeSelect = useCallback((_blockType: BlockType) => {
+  const handleBlockTypeSelect = useCallback(() => {
     if (selectedLineIndex === null) return;
     
     // The line already has ::, so we don't need to add it

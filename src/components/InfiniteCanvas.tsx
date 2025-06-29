@@ -102,7 +102,7 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
       setIsPanning(false);
     }, []);
 
-    const handleWheel = useCallback((e: React.WheelEvent<SVGSVGElement>) => {
+    const handleWheel = useCallback((e: WheelEvent) => {
       e.preventDefault();
       
       const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
@@ -133,6 +133,18 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
         });
       }
     }, [viewBox]);
+
+    // Add wheel event listener with passive: false
+    useEffect(() => {
+      const svgElement = svgRef.current;
+      if (!svgElement) return;
+
+      svgElement.addEventListener('wheel', handleWheel, { passive: false });
+      
+      return () => {
+        svgElement.removeEventListener('wheel', handleWheel);
+      };
+    }, [handleWheel]);
 
     // Calculate bounds for all blocks
     const blockBounds = blocks.length > 0 ? {
@@ -191,7 +203,6 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
           className="select-none"
         >
           {/* Grid pattern */}

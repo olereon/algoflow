@@ -5,6 +5,9 @@ export const BLOCK_COLORS: Record<BlockType, string> = {
   end: '#ef4444',
   process: '#3b82f6',
   condition: '#f59e0b',
+  'else-if': '#f97316', // Orange variant for ELSE IF
+  switch: '#84cc16', // Green variant for SWITCH
+  case: '#65a30d', // Darker green for CASE
   loop: '#8b5cf6',
   input: '#06b6d4',
   output: '#ec4899',
@@ -28,7 +31,10 @@ export const BLOCK_DIMENSIONS = {
 export const KEYWORD_PATTERNS: Record<BlockType, RegExp[]> = {
   start: [/^start$/i, /^begin$/i, /^initialize$/i],
   end: [/^end$/i, /^stop$/i, /^exit$/i],
-  condition: [/^if\s+/i, /^else\s*if/i, /^else$/i, /^switch/i, /^case/i],
+  condition: [/^if\s+/i, /^else$/i],
+  'else-if': [/^else\s*if\s+/i, /^elif\s+/i],
+  switch: [/^switch\s+/i, /^select\s+case/i],
+  case: [/^case\s+/i, /^when\s+/i, /^default$/i, /^otherwise$/i],
   loop: [/^while\s+/i, /^for\s+/i, /^do\s+/i, /^repeat\s+/i, /^loop/i],
   input: [/^input\s+/i, /^read\s+/i, /^get\s+/i, /^scan/i, /^enter/i],
   output: [/^output\s+/i, /^print\s+/i, /^display\s+/i, /^show\s+/i, /^write/i],
@@ -41,17 +47,16 @@ export const KEYWORD_PATTERNS: Record<BlockType, RegExp[]> = {
 };
 
 export const DEFAULT_PROJECT: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
-  name: 'Untitled Project',
-  pseudocode: `Start
-Input number
-Call calculateFactorial with number::
-Output result
-End
-
-Function calculateFactorial(n)::
-  If n <= 1::
-    Return 1
-  Else::
-    Return n * calculateFactorial(n-1)
+  name: 'IF-ELSE Demo',
+  pseudocode: `Start::
+Input grade::
+If grade >= 90::
+  Output "A"::
+Else if grade >= 80::
+  Output "B"::
+Else::
+  Output "C"::
+End if::
+End::
 `
 };

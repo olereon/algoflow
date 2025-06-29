@@ -1,0 +1,30 @@
+Test Case for IF/ELSE IF/ELSE Fix
+==================================
+
+BEFORE FIX:
+- Output blocks within IF/ELSE IF branches were connecting to the next ELSE IF condition
+- This created a linear flow where multiple outputs could execute
+- Only the final ELSE branch properly jumped to END
+
+AFTER FIX:
+- Each output block now correctly jumps to "End if"
+- Only one branch executes based on the condition
+- Proper conditional flow is maintained
+
+Key Changes Made:
+1. Enhanced branch exit detection logic
+2. Added checks for:
+   - Next block being outside branch boundaries
+   - Next block having lower indentation
+   - Next block being another condition/else-if
+3. Improved END block detection to handle "End if" and "End switch"
+4. Applied fixes to IF, ELSE IF, and ELSE branches
+
+Expected Behavior:
+- If grade >= 90: Output "A" → Jump to End if
+- Else if grade >= 80: Output "B" → Jump to End if
+- Else if grade >= 70: Output "C" → Jump to End if
+- Else if grade >= 60: Output "D" → Jump to End if
+- Else: Output "F" → Jump to End if
+
+The flowchart should now show proper branching with each output block having an arrow directly to the "End if" block, preventing sequential execution of multiple branches.

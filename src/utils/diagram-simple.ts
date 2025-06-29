@@ -6,62 +6,24 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
   const { width, height, paddingY } = BLOCK_DIMENSIONS;
   
   let currentY = paddingY;
-  const indentWidth = 250; // Reduced for better nested loop visibility
-  const centerX = 400; // Center alignment for main flow
+  const indentWidth = 250;
+  const centerX = 400;
   
   // First pass: create blocks with positions
   let startBlockX: number | null = null;
   
-  // Track conditional blocks and their positions
-  let conditionalCounter = 0; // Counter for ELSE IF positioning
-  let lastConditionalX = centerX - width / 2; // Track the last conditional's X position
-  
   parsedLines.forEach((line, index) => {
-    // Calculate x position for correct flowchart layout
     let x: number;
-    
-    const isElse = line.content.toLowerCase() === 'else' && line.blockType === 'condition' && line.isClosing;
-    const isElseIf = line.blockType === 'else-if';
-    const isMainIf = line.blockType === 'condition' && !line.isClosing;
     
     if (line.blockType === 'start') {
       x = centerX - width / 2;
       startBlockX = x;
     } else if (line.blockType === 'end') {
       x = startBlockX !== null ? startBlockX : centerX - width / 2;
-    } else if (isMainIf) {
-      // Main IF block - center column
+    } else if (line.indentLevel === 0) {
       x = centerX - width / 2;
-      lastConditionalX = x;
-      conditionalCounter = 0;
-    } else if (isElseIf) {
-      // ELSE IF blocks - first offset to the right
-      conditionalCounter = 1;
-      x = centerX + (conditionalCounter * indentWidth) - width / 2;
-      lastConditionalX = x;
-    } else if (isElse) {
-      // ELSE blocks - second offset to the right
-      conditionalCounter = 2;
-      x = centerX + (conditionalCounter * indentWidth) - width / 2;
-      lastConditionalX = x;
-    } else if (line.content.toLowerCase().match(/^end\s+(if|condition)/)) {
-      // END IF block - back to center
-      x = centerX - width / 2;
-      conditionalCounter = 0;
     } else {
-      // Content blocks - determine if they're inside a conditional
-      const isInsideConditional = index > 0 && 
-        (parsedLines[index - 1].blockType === 'condition' || 
-         parsedLines[index - 1].blockType === 'else-if' ||
-         (parsedLines[index - 1].blockType === 'condition' && parsedLines[index - 1].isClosing));
-      
-      if (isInsideConditional) {
-        // Inside conditionals - use last conditional's position
-        x = lastConditionalX;
-      } else {
-        // Main flow - center
-        x = centerX - width / 2;
-      }
+      x = centerX + (line.indentLevel * indentWidth) - width / 2;
     }
     
     const position: BlockPosition = {
@@ -78,8 +40,6 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
       connections: []
     });
     
-    
-    // Add extra spacing for better visual separation
     currentY += height + paddingY + (line.blockType === 'end' ? paddingY * 2 : 0);
   });
   
@@ -88,10 +48,7 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
   const nonEndBlocks = blocks.filter(block => block.blockType !== 'end');
   
   if (endBlocks.length > 0 && nonEndBlocks.length > 0) {
-    // Find the lowest Y position among non-END blocks
     const lowestY = Math.max(...nonEndBlocks.map(block => block.position.y + block.position.height));
-    
-    // Place END blocks just below the lowest block
     endBlocks.forEach(endBlock => {
       endBlock.position.y = lowestY + paddingY;
     });

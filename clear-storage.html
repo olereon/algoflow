@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear AlgoFlow Storage</title>
+</head>
+<body>
+    <h1>Clear AlgoFlow Local Storage</h1>
+    <p>Open this file in your browser to clear the AlgoFlow storage.</p>
+    
+    <button onclick="clearStorage()">Clear Storage</button>
+    <div id="result"></div>
+    
+    <script>
+        function clearStorage() {
+            // Clear AlgoFlow specific storage
+            localStorage.removeItem('algoflow_projects');
+            
+            // Also clear any other potential keys
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.includes('algoflow')) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            document.getElementById('result').innerHTML = '<p style="color: green;">Storage cleared! Please reload the AlgoFlow app.</p>';
+        }
+    </script>
+</body>
+</html>

@@ -10,7 +10,7 @@ function createOrthogonalPath(
   startY: number, 
   endX: number, 
   endY: number, 
-  type: 'yes' | 'no' | 'default' = 'default'
+  type: 'yes' | 'no' | 'case' | 'default' = 'default'
 ): string {
   // Create orthogonal path with right angles
   if (Math.abs(startX - endX) < 10) {
@@ -26,6 +26,11 @@ function createOrthogonalPath(
     // NO path goes right/left then down
     const midX = startX + (endX > startX ? 60 : -60);
     const midY = startY + 20;
+    return `M ${startX} ${startY} L ${midX} ${startY} L ${midX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
+  } else if (type === 'case') {
+    // CASE path spreads out to multiple targets
+    const midX = startX + (endX > startX ? 80 : -80);
+    const midY = startY + 30;
     return `M ${startX} ${startY} L ${midX} ${startY} L ${midX} ${midY} L ${endX} ${midY} L ${endX} ${endY}`;
   } else {
     // Default path
@@ -104,8 +109,8 @@ export const Connection: React.FC<ConnectionProps> = ({ connection, blocks }) =>
   if (connection.type === 'yes' || connection.type === 'no') {
     const path = createOrthogonalPath(startX, startY, endX, endY, connection.type);
     const isYes = connection.type === 'yes';
-    const labelOffset = isYes ? 30 : 40;
-    const labelX = isYes ? startX + 15 : startX + (endX > startX ? 40 : -40);
+    const labelOffset = isYes ? 30 : 15; // NO text closer to the conditional block
+    const labelX = isYes ? startX + 15 : startX + (endX > startX ? 80 : -80); // NO text further to the right
     const labelY = startY + labelOffset;
     const color = isYes ? '#059669' : '#dc2626'; // Green for YES, Red for NO
     
@@ -143,6 +148,53 @@ export const Connection: React.FC<ConnectionProps> = ({ connection, blocks }) =>
         >
           {connection.type.toUpperCase()}
         </text>
+      </g>
+    );
+  }
+  
+  // For case connections (SWITCH/CASE)
+  if (connection.type === 'case') {
+    const path = createOrthogonalPath(startX, startY, endX, endY, connection.type);
+    const labelX = startX + (endX > startX ? 50 : -50);
+    const labelY = startY + 20;
+    const color = '#65a30d'; // Green color for case connections
+    
+    return (
+      <g>
+        <defs>
+          <marker
+            id="arrowhead-case"
+            markerWidth="10"
+            markerHeight="10"
+            refX="9"
+            refY="3"
+            orient="auto"
+          >
+            <polygon
+              points="0 0, 10 3, 0 6"
+              fill={color}
+            />
+          </marker>
+        </defs>
+        <path
+          d={path}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          markerEnd="url(#arrowhead-case)"
+        />
+        {connection.label && (
+          <text
+            x={labelX}
+            y={labelY}
+            fill={color}
+            fontSize="11"
+            fontWeight="bold"
+            textAnchor="middle"
+          >
+            {connection.label}
+          </text>
+        )}
       </g>
     );
   }
