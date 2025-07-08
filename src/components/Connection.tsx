@@ -10,7 +10,7 @@ function createOrthogonalPath(
   startY: number, 
   endX: number, 
   endY: number, 
-  type: 'yes' | 'no' | 'case' | 'default' = 'default'
+  type: 'yes' | 'no' | 'case' | 'default' | 'recursive' = 'default'
 ): string {
   // Create orthogonal path with right angles
   if (Math.abs(startX - endX) < 10) {
@@ -101,6 +101,53 @@ export const Connection: React.FC<ConnectionProps> = ({ connection, blocks }) =>
             L{connection.depth + 1}
           </text>
         )}
+      </g>
+    );
+  }
+  
+  // For recursive connections
+  if (connection.type === 'recursive') {
+    // Blue dashed arrow going to the left side and back to the condition
+    const recursiveOffset = 120; // Larger offset for recursive calls
+    const recursiveX = Math.min(fromBlock.position.x, toBlock.position.x) - recursiveOffset;
+    const path = `M ${startX} ${startY} L ${startX} ${startY + 30} L ${recursiveX} ${startY + 30} L ${recursiveX} ${endY - 30} L ${endX} ${endY - 30} L ${endX} ${endY}`;
+    const color = '#2563eb'; // Blue color for recursive calls
+    
+    return (
+      <g>
+        <defs>
+          <marker
+            id="arrowhead-recursive"
+            markerWidth="10"
+            markerHeight="10"
+            refX="9"
+            refY="3"
+            orient="auto"
+          >
+            <polygon
+              points="0 0, 10 3, 0 6"
+              fill={color}
+            />
+          </marker>
+        </defs>
+        <path
+          d={path}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeDasharray="8,4"
+          markerEnd="url(#arrowhead-recursive)"
+        />
+        <text
+          x={recursiveX - 15}
+          y={(startY + endY) / 2}
+          fill={color}
+          fontSize="10"
+          fontWeight="bold"
+          textAnchor="middle"
+        >
+          REC
+        </text>
       </g>
     );
   }

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Project, FunctionDefinition } from '../types';
 import { InfiniteCanvasRef } from '../components/InfiniteCanvas';
 import { DEFAULT_PROJECT } from '../constants';
@@ -39,6 +39,24 @@ export function useAlgorithmVisualizer() {
     ...func,
     blocks: layoutBlocks(func.blocks)
   }));
+  
+  // Log function parsing and block structure for debugging
+  React.useEffect(() => {
+    console.log('=== FUNCTION PARSING DEBUG ===');
+    functions.forEach(func => {
+      console.log(`📝 Function: ${func.name}`);
+      console.log(`- Parameters: [${func.parameters.join(', ')}]`);
+      console.log(`- Blocks:`, func.blocks.map((block, i) => `${i}: "${block.content}" (${block.blockType}, isClosing: ${block.isClosing})`));
+      
+      if (func.recursion?.isRecursive) {
+        console.log(`🔄 Recursive function detected: ${func.name}`);
+        console.log(`- Pattern: ${func.recursion.pattern?.type} (confidence: ${func.recursion.pattern?.confidence})`);
+        console.log(`- Call points: ${func.recursion.callPoints.length}`);
+        console.log(`- Base cases: ${func.recursion.baseCases.join('; ')}`);
+        console.log(`- Recursive cases: ${func.recursion.recursiveCases.join('; ')}`);
+      }
+    });
+  }, [functions]);
   
   // Handle line click in editor
   const handleLineClick = useCallback((lineIndex: number, event: React.MouseEvent) => {

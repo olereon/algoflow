@@ -23,6 +23,7 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
     const isElse = line.content.toLowerCase() === 'else' && line.blockType === 'condition' && line.isClosing;
     const isElseIf = line.blockType === 'else-if';
     const isMainIf = line.blockType === 'condition' && !line.isClosing;
+    const isImplicitElse = line.blockType === 'implicit-else';
     
     if (line.blockType === 'start') {
       x = centerX - width / 2;
@@ -35,13 +36,32 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
       lastConditionalX = x;
       conditionalCounter = 0;
     } else if (isElseIf) {
-      // ELSE IF blocks - first offset to the right
-      conditionalCounter = 1;
+      // ELSE IF blocks - progressive positioning based on previous ELSE IF blocks
+      // Count the number of ELSE IF blocks before this ELSE IF
+      let previousElseIfCount = 0;
+      for (let j = 0; j < index; j++) {
+        if (parsedLines[j].blockType === 'else-if') {
+          previousElseIfCount++;
+        }
+      }
+      conditionalCounter = 1 + previousElseIfCount;
       x = centerX + (conditionalCounter * indentWidth) - width / 2;
       lastConditionalX = x;
     } else if (isElse) {
-      // ELSE blocks - second offset to the right
-      conditionalCounter = 2;
+      // ELSE blocks - positioned after all ELSE IF blocks
+      // Count the number of ELSE IF blocks before this ELSE
+      let elseIfCount = 0;
+      for (let j = 0; j < index; j++) {
+        if (parsedLines[j].blockType === 'else-if') {
+          elseIfCount++;
+        }
+      }
+      conditionalCounter = 1 + elseIfCount;
+      x = centerX + (conditionalCounter * indentWidth) - width / 2;
+      lastConditionalX = x;
+    } else if (isImplicitElse) {
+      // Implicit ELSE blocks - positioned in first column to the right
+      conditionalCounter = 1;
       x = centerX + (conditionalCounter * indentWidth) - width / 2;
       lastConditionalX = x;
     } else if (line.content.toLowerCase().match(/^end\s+(if|condition)/)) {
@@ -109,7 +129,14 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
         return i;
       }
       
-      // Or look for block with lower indentation
+      // For IF/ELSE IF/ELSE structures, skip intermediate conditions
+      if (currentBlock.blockType === 'else-if' || 
+          (currentBlock.blockType === 'condition' && currentBlock.isClosing) ||
+          currentBlock.blockType === 'implicit-else') {
+        continue; // Skip ELSE IF, ELSE, and IMPLICIT-ELSE blocks, keep looking for END IF
+      }
+      
+      // Or look for block with lower indentation (fallback)
       if (currentBlock.indentLevel < startBlock.indentLevel) {
         return i;
       }
@@ -120,21 +147,39 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
   
   // Simple function to check if a block is inside a conditional structure
   const isInsideConditional = (blockIndex: number): number | null => {
-    // Walk backwards to find the nearest conditional start
+    // Walk backwards to find the main IF block (not ELSE/ELSE-IF)
+    let mainIfIndex = null;
+    
     for (let i = blockIndex - 1; i >= 0; i--) {
       const checkBlock = blocks[i];
       
-      // Found a conditional block
-      if (checkBlock.blockType === 'condition' || checkBlock.blockType === 'else-if' || 
-          checkBlock.blockType === 'switch') {
-        
-        // Check if current block is within this conditional's scope
-        const endIndex = findConditionalEnd(i);
-        if (endIndex !== null && blockIndex < endIndex) {
-          return endIndex; // Return the end index of the conditional
-        }
+      // Found a main IF block (not closing, not else-if)
+      if (checkBlock.blockType === 'condition' && !checkBlock.isClosing) {
+        mainIfIndex = i;
+        break;
+      }
+      // Found an ELSE IF block, keep looking for the main IF
+      else if (checkBlock.blockType === 'else-if') {
+        continue; // Keep looking backwards
+      }
+      // Found an ELSE block, keep looking for the main IF
+      else if (checkBlock.blockType === 'condition' && checkBlock.isClosing) {
+        continue; // Keep looking backwards
+      }
+      // Found an IMPLICIT-ELSE block, keep looking for the main IF
+      else if (checkBlock.blockType === 'implicit-else') {
+        continue; // Keep looking backwards
       }
     }
+    
+    if (mainIfIndex !== null) {
+      // Find the end of the main IF conditional structure
+      const endIndex = findConditionalEnd(mainIfIndex);
+      if (endIndex !== null && blockIndex < endIndex) {
+        return endIndex; // Return the end index of the main conditional
+      }
+    }
+    
     return null;
   };
   
@@ -151,13 +196,27 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
       }
       
       // Find the next condition/else/end block for NO arrow
+      // Priority: 1) ELSE/ELSE-IF/IMPLICIT-ELSE blocks, 2) Block AFTER END IF
+      let noTarget = null;
       for (let i = index + 1; i < blocks.length; i++) {
         if (blocks[i].blockType === 'else-if' || 
             (blocks[i].blockType === 'condition' && blocks[i].isClosing) ||
-            blocks[i].content.toLowerCase().match(/^end\s+(if|condition)/)) {
-          connections.push({ from: index, to: i, type: 'no' });
+            blocks[i].blockType === 'implicit-else') {
+          noTarget = i;
+          break;
+        } else if (blocks[i].content.toLowerCase().match(/^end\s+(if|condition)/)) {
+          // If no ELSE found, go to the block AFTER END IF
+          if (i + 1 < blocks.length) {
+            noTarget = i + 1;
+          } else {
+            noTarget = i; // Fallback to END IF if no block after
+          }
           break;
         }
+      }
+      
+      if (noTarget !== null) {
+        connections.push({ from: index, to: noTarget, type: 'no' });
       }
       
     } else if (block.blockType === 'else-if') {
@@ -167,19 +226,69 @@ export function layoutBlocks(parsedLines: ParsedLine[]): DiagramBlock[] {
       }
       
       // Find the next condition/else/end block for NO arrow
+      // Priority: 1) ELSE/ELSE-IF blocks, 2) Block AFTER END IF
+      let noTarget = null;
       for (let i = index + 1; i < blocks.length; i++) {
         if (blocks[i].blockType === 'else-if' || 
-            (blocks[i].blockType === 'condition' && blocks[i].isClosing) ||
-            blocks[i].content.toLowerCase().match(/^end\s+(if|condition)/)) {
-          connections.push({ from: index, to: i, type: 'no' });
+            (blocks[i].blockType === 'condition' && blocks[i].isClosing)) {
+          noTarget = i;
+          break;
+        } else if (blocks[i].content.toLowerCase().match(/^end\s+(if|condition)/)) {
+          // If no ELSE found, go to the block AFTER END IF
+          if (i + 1 < blocks.length) {
+            noTarget = i + 1;
+          } else {
+            noTarget = i; // Fallback to END IF if no block after
+          }
           break;
         }
+      }
+      
+      if (noTarget !== null) {
+        connections.push({ from: index, to: noTarget, type: 'no' });
       }
       
     } else if (block.blockType === 'condition' && block.isClosing) {
       // ELSE block: connect to next
       if (index < blocks.length - 1) {
         connections.push({ from: index, to: index + 1, type: 'default' });
+      }
+      
+    } else if (block.blockType === 'implicit-else') {
+      // Implicit ELSE block: connect directly to END IF with red arrow
+      for (let i = index + 1; i < blocks.length; i++) {
+        if (blocks[i].content.toLowerCase().match(/^end\s+(if|condition)/)) {
+          connections.push({ from: index, to: i, type: 'no' });
+          break;
+        }
+      }
+      
+    } else if (block.blockType === 'return') {
+      // Return blocks with recursive calls
+      const isRecursiveCall = block.content.toLowerCase().includes('call') || 
+                              block.content.toLowerCase().includes('factorial') ||
+                              block.content.toLowerCase().includes('fibonacci');
+      
+      if (isRecursiveCall) {
+        // Find the first condition block (usually the function's conditional logic)
+        for (let i = 0; i < blocks.length; i++) {
+          if (blocks[i].blockType === 'condition' && !blocks[i].isClosing) {
+            connections.push({ from: index, to: i, type: 'recursive' });
+            break;
+          }
+        }
+      }
+      
+      // Return blocks inside conditionals should connect to the conditional end
+      const conditionalEnd = isInsideConditional(index);
+      if (conditionalEnd !== null) {
+        // Inside a conditional: connect directly to the end
+        connections.push({ from: index, to: conditionalEnd, type: 'default' });
+      } else {
+        // Outside conditionals: connect to next block if not at end
+        if (index < blocks.length - 1) {
+          connections.push({ from: index, to: index + 1, type: 'default' });
+        }
       }
       
     } else {

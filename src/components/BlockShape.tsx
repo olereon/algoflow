@@ -42,6 +42,20 @@ export const BlockShape: React.FC<BlockShapeProps> = ({ type, x, y, width, heigh
         />
       );
     }
+    
+    case 'implicit-else': {
+      // Regular-sized diamond for implicit ELSE (NO path)
+      const cx = x + width / 2;
+      const cy = y + height / 2;
+      return (
+        <polygon
+          points={`${cx},${y} ${x + width},${cy} ${cx},${y + height} ${x},${cy}`}
+          fill={fillColor}
+          stroke="#ffffff"
+          strokeWidth="2"
+        />
+      );
+    }
       
     case 'switch': {
       // Octagon (like diamond but with more sides)

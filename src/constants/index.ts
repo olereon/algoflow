@@ -15,7 +15,8 @@ export const BLOCK_COLORS: Record<BlockType, string> = {
   'function-def': '#4f46e5',
   return: '#7c3aed',
   comment: '#6b7280',
-  connector: '#a855f7'
+  connector: '#a855f7',
+  'implicit-else': '#dc2626' // Red color for implicit ELSE (NO path)
 };
 
 export const BLOCK_DIMENSIONS = {
@@ -43,6 +44,7 @@ export const KEYWORD_PATTERNS: Record<BlockType, RegExp[]> = {
   return: [/^return\s*/i],
   comment: [/^\/\//i, /^#/i, /^comment:/i],
   connector: [/^goto\s+/i, /^jump\s+/i, /^continue$/i, /^break$/i],
+  'implicit-else': [], // Virtual block, no keyword patterns
   process: [] // Default type, no specific patterns
 };
 
@@ -59,4 +61,36 @@ Else::
 End if::
 End::
 `
+};
+
+export const RECURSIVE_DEMO_PROJECT: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
+  name: 'Recursive Functions Demo',
+  pseudocode: `Start::
+Input n::
+Call factorial(n)::
+Output result::
+End::
+
+Function factorial(n)::
+  If n <= 1::
+    Return 1::
+  End if::
+  Return n * call factorial(n-1)::
+End function::
+
+Function fibonacci(n)::
+  If n <= 1::
+    Return n::
+  End if::
+  Return call fibonacci(n-1) + call fibonacci(n-2)::
+End function::
+
+Function traverseTree(node)::
+  If node is null::
+    Return::
+  End if::
+  Process node::
+  Call traverseTree(node.left)::
+  Call traverseTree(node.right)::
+End function::`
 };

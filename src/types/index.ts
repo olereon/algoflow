@@ -1,4 +1,4 @@
-export type BlockType = 'start' | 'end' | 'process' | 'condition' | 'else-if' | 'switch' | 'case' | 'loop' | 'input' | 'output' | 'function' | 'function-def' | 'return' | 'comment' | 'connector';
+export type BlockType = 'start' | 'end' | 'process' | 'condition' | 'else-if' | 'switch' | 'case' | 'loop' | 'input' | 'output' | 'function' | 'function-def' | 'return' | 'comment' | 'connector' | 'implicit-else';
 
 export interface ParsedLine {
   content: string;
@@ -17,7 +17,7 @@ export interface BlockPosition {
 export interface Connection {
   from: number;
   to: number;
-  type: 'default' | 'yes' | 'no' | 'loop-back' | 'case';
+  type: 'default' | 'yes' | 'no' | 'loop-back' | 'case' | 'recursive';
   depth?: number; // For nested loop visualization
   label?: string; // For case labels (e.g., "Case 1", "Case A", "Default")
 }
@@ -29,11 +29,35 @@ export interface DiagramBlock extends ParsedLine {
   functionName?: string; // For function call blocks
 }
 
+export interface RecursiveCallPoint {
+  lineIndex: number;
+  content: string;
+  parameters: string[];
+  isBaseCase: boolean;
+}
+
+export interface RecursionPattern {
+  type: 'factorial' | 'fibonacci' | 'tree-traversal' | 'generic';
+  confidence: number; // 0-1 score for pattern match
+  baseCase?: string;
+  recursiveCase?: string;
+}
+
+export interface RecursionMetadata {
+  isRecursive: boolean;
+  callPoints: RecursiveCallPoint[];
+  pattern?: RecursionPattern;
+  baseCases: string[];
+  recursiveCases: string[];
+  maxDepthHint?: number;
+}
+
 export interface FunctionDefinition {
   name: string;
   parameters: string[];
   blocks: DiagramBlock[];
   originalStartIndex: number;
+  recursion?: RecursionMetadata;
 }
 
 export interface Project {
