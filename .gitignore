@@ -22,3 +22,39 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+dev-debug.log
+
+# Dependency directories
+node_modules/
+
+# Environment variables
+.env
+.env.example
+
+# IDE and Editor files
+.vscode/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Task Master AI files
+.taskmaster/
+
+# Test and debug files
+debug-*.mjs
+debug-*.js
+test-*.js
+test_*.txt
+*_test.txt
+
+# Project documentation drafts
+*_prd.txt
+*_spec.txt
+*_draft.txt
+
+# Temporary files
+*.tmp
+*.temp
+*.log 
