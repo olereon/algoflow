@@ -1,5 +1,5 @@
 import React from 'react';
-import { Code2, X, Play, Layers } from 'lucide-react';
+import { Code2, X, Play, Layers, Zap, Activity } from 'lucide-react';
 import { useAlgorithmVisualizer } from './hooks/useAlgorithmVisualizer';
 import { Editor } from './components/Editor';
 import { InfiniteCanvas } from './components/InfiniteCanvas';
@@ -8,6 +8,8 @@ import { BlockTypeSelector } from './components/BlockTypeSelector';
 import { FunctionPopup } from './components/FunctionPopup';
 import { EnhancedDepthDemo } from './components/EnhancedDepthDemo';
 import { IntegratedStackVisualizer } from './components/IntegratedStackVisualizer';
+import { AnimationShowcase } from './components/AnimationShowcase';
+import { AnimationDebugger } from './components/AnimationDebugger';
 import { RECURSIVE_DEMO_PROJECT } from './constants';
 
 export default function App() {
@@ -44,11 +46,31 @@ export default function App() {
 
   const [showDemo, setShowDemo] = React.useState(false);
   const [showIntegratedStack, setShowIntegratedStack] = React.useState(false);
+  const [showAnimationShowcase, setShowAnimationShowcase] = React.useState(false);
+  const [showAnimationDebugger, setShowAnimationDebugger] = React.useState(false);
 
   const loadRecursiveDemo = () => {
     setPseudocode(RECURSIVE_DEMO_PROJECT.pseudocode);
     setShowIntegratedStack(true);
   };
+
+  if (showAnimationShowcase) {
+    return (
+      <div className="min-h-screen">
+        <div className="fixed top-4 right-4 z-50">
+          <button
+            onClick={() => setShowAnimationShowcase(false)}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            ← Back to App
+          </button>
+        </div>
+        <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading showcase...</div>}>
+          <AnimationShowcase />
+        </React.Suspense>
+      </div>
+    );
+  }
 
   if (showDemo) {
     return (
@@ -81,7 +103,7 @@ export default function App() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={loadRecursiveDemo}
               className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded transition-colors"
@@ -94,7 +116,21 @@ export default function App() {
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded transition-colors"
             >
               <Play size={16} />
-              Animation Demo
+              Depth Demo
+            </button>
+            <button
+              onClick={() => setShowAnimationShowcase(true)}
+              className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded transition-colors"
+            >
+              <Zap size={16} />
+              Animations
+            </button>
+            <button
+              onClick={() => setShowAnimationDebugger(true)}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-3 py-2 rounded transition-colors"
+            >
+              <Activity size={16} />
+              Debugger
             </button>
             {currentProject && (
               <div className="text-right">
@@ -230,6 +266,13 @@ export default function App() {
           onClose={() => setShowFunctionPopup(false)}
         />
       )}
+
+      {/* Animation Debugger */}
+      <AnimationDebugger
+        isOpen={showAnimationDebugger}
+        onClose={() => setShowAnimationDebugger(false)}
+        position="bottom-right"
+      />
     </div>
   );
 }

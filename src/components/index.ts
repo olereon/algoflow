@@ -16,4 +16,5 @@ export { CollapsibleStackSection } from './CollapsibleStackSection';
 export { AccessibilitySettings } from './AccessibilitySettings';
 export { EnhancedDepthDemo } from './EnhancedDepthDemo';
 export { IntegratedStackVisualizer } from './IntegratedStackVisualizer';
+export { AnimationDebugger } from './AnimationDebugger';
 export { Toolbar } from './Toolbar';
