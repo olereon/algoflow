@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ChevronDown, ChevronRight, Play, Pause, ArrowLeft, Code2 } from 'lucide-react';
 import { FrameVariable, FrameComponentProps } from '../types';
+import { useFrameAnimation } from '../hooks/useStackAnimations';
+import { DepthCounter } from './DepthCounter';
+import { 
+  getDepthColorConfig, 
+  getDepthClasses,
+  DepthVisualizationOptions 
+} from '../utils/depthVisualization';
 
 interface VariableDisplayProps {
   variable: FrameVariable;
@@ -46,49 +53,57 @@ const VariableDisplay: React.FC<VariableDisplayProps> = ({ variable, compact }) 
   );
 };
 
-export const StackFrameComponent: React.FC<FrameComponentProps> = ({
+export const StackFrameComponent: React.FC<FrameComponentProps & {
+  visualizationOptions?: DepthVisualizationOptions;
+  showDepthCounter?: boolean;
+}> = ({
   frame,
   isActive,
   isCollapsed = false,
   onToggleCollapse,
   onFrameClick,
   showVariables = true,
-  compact = false
+  compact = false,
+  animationState = 'idle',
+  animationSpeed = 'normal',
+  visualizationOptions = {},
+  showDepthCounter = true
 }) => {
-  const getFrameBackgroundColor = (): string => {
-    if (isActive) return 'bg-blue-50 border-blue-200';
-    if (frame.depth === 0) return 'bg-gray-50 border-gray-200';
-    return 'bg-white border-gray-200';
-  };
+  // Animation hook
+  const { isAnimating, currentState, animationClasses } = useFrameAnimation(
+    frame.id,
+    animationState,
+    animationSpeed
+  );
 
-  const getFrameHeaderColor = (): string => {
-    if (isActive) return 'bg-blue-100 text-blue-800';
-    if (frame.depth === 0) return 'bg-gray-100 text-gray-800';
-    return 'bg-gray-50 text-gray-700';
-  };
+  // Depth visualization
+  const depthConfig = getDepthColorConfig(frame.depth, visualizationOptions);
+  const depthClasses = getDepthClasses(frame.depth, visualizationOptions);
+  const getFrameStyle = useCallback(() => {
+    const baseStyle = {
+      backgroundColor: depthConfig.background,
+      borderColor: depthConfig.border,
+      color: depthConfig.text
+    };
 
-  const getDepthIndicator = (): React.ReactNode => {
-    if (frame.depth === 0) return null;
-    
-    const depthColors = [
-      'bg-blue-400',
-      'bg-green-400', 
-      'bg-yellow-400',
-      'bg-red-400',
-      'bg-purple-400',
-      'bg-pink-400',
-      'bg-indigo-400'
-    ];
-    
-    const colorIndex = (frame.depth - 1) % depthColors.length;
-    
-    return (
-      <div className="flex items-center gap-1">
-        <div className={`w-2 h-2 rounded-full ${depthColors[colorIndex]}`} />
-        <span className="text-xs text-gray-500">L{frame.depth}</span>
-      </div>
-    );
-  };
+    if (isActive) {
+      return {
+        ...baseStyle,
+        backgroundColor: depthConfig.accent,
+        boxShadow: `0 0 0 2px ${depthConfig.border}`,
+        borderColor: depthConfig.accent
+      };
+    }
+
+    return baseStyle;
+  }, [depthConfig, isActive]);
+
+  const getFrameHeaderStyle = useCallback(() => {
+    return {
+      background: depthConfig.gradient,
+      color: depthConfig.text
+    };
+  }, [depthConfig]);
 
   const handleFrameClick = () => {
     if (onFrameClick) {
@@ -103,15 +118,49 @@ export const StackFrameComponent: React.FC<FrameComponentProps> = ({
     }
   };
 
+  // Combine animation classes with base classes
+  const frameClasses = useMemo(() => {
+    const baseClasses = [
+      'border-2',
+      'rounded-lg',
+      'transition-all',
+      'duration-200',
+      'hover:shadow-lg',
+      onFrameClick ? 'cursor-pointer' : '',
+      ...depthClasses
+    ];
+
+    // Add animation classes
+    if (isAnimating) {
+      baseClasses.push('stack-frame-animated', ...animationClasses);
+    }
+
+    // Add state-based classes
+    if (isActive) {
+      baseClasses.push('stack-frame-active');
+    }
+
+    if (currentState === 'updating') {
+      baseClasses.push('stack-frame-updating');
+    }
+
+    return baseClasses.filter(Boolean).join(' ');
+  }, [onFrameClick, isAnimating, animationClasses, isActive, currentState, depthClasses]);
+
   return (
     <div 
-      className={`border rounded-lg transition-all duration-200 hover:shadow-md ${getFrameBackgroundColor()} ${
-        onFrameClick ? 'cursor-pointer' : ''
-      }`}
+      className={frameClasses}
       onClick={handleFrameClick}
+      style={{
+        ...getFrameStyle(),
+        willChange: isAnimating ? 'transform, opacity' : 'auto'
+      }}
     >
       {/* Frame Header */}
-      <div className={`px-3 py-2 rounded-t-lg ${getFrameHeaderColor()}`}>
+      <div 
+        className="px-3 py-2 rounded-t-lg"
+        style={getFrameHeaderStyle()}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {/* Collapse/Expand Button */}
@@ -134,7 +183,14 @@ export const StackFrameComponent: React.FC<FrameComponentProps> = ({
             </div>
             
             {/* Depth Indicator */}
-            {getDepthIndicator()}
+            {showDepthCounter && (
+              <DepthCounter
+                depth={frame.depth}
+                totalFrames={1}
+                compact={compact}
+                options={visualizationOptions}
+              />
+            )}
             
             {/* Function Name */}
             <div className="flex items-center gap-1">

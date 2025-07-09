@@ -1,10 +1,12 @@
-import { Code2, X } from 'lucide-react';
+import React from 'react';
+import { Code2, X, Play } from 'lucide-react';
 import { useAlgorithmVisualizer } from './hooks/useAlgorithmVisualizer';
 import { Editor } from './components/Editor';
 import { InfiniteCanvas } from './components/InfiniteCanvas';
 import { Toolbar } from './components/Toolbar';
 import { BlockTypeSelector } from './components/BlockTypeSelector';
 import { FunctionPopup } from './components/FunctionPopup';
+import { EnhancedDepthDemo } from './components/EnhancedDepthDemo';
 
 export default function App() {
   const {
@@ -37,6 +39,26 @@ export default function App() {
     handleDelete
   } = useAlgorithmVisualizer();
 
+  const [showDemo, setShowDemo] = React.useState(false);
+
+  if (showDemo) {
+    return (
+      <div className="min-h-screen">
+        <div className="fixed top-4 right-4 z-50">
+          <button
+            onClick={() => setShowDemo(false)}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            ← Back to App
+          </button>
+        </div>
+        <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading demo...</div>}>
+          <EnhancedDepthDemo />
+        </React.Suspense>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-gray-800 text-white p-4">
@@ -50,20 +72,29 @@ export default function App() {
               </p>
             </div>
           </div>
-          {currentProject && (
-            <div className="text-right">
-              <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="bg-gray-700 text-white px-3 py-1 rounded"
-                placeholder="Project name"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Last saved: {new Date(currentProject.updatedAt).toLocaleString()}
-              </p>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowDemo(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded transition-colors"
+            >
+              <Play size={16} />
+              Animation Demo
+            </button>
+            {currentProject && (
+              <div className="text-right">
+                <input
+                  type="text"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  className="bg-gray-700 text-white px-3 py-1 rounded"
+                  placeholder="Project name"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Last saved: {new Date(currentProject.updatedAt).toLocaleString()}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

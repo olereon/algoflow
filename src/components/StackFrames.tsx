@@ -1,7 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { ChevronDown, ChevronUp, MoreHorizontal, Layers, AlertTriangle } from 'lucide-react';
-import { StackFrame } from '../types';
+import { StackFrame, AnimationConfig } from '../types';
 import { StackFrameComponent } from './StackFrame';
+import { useStackAnimations } from '../hooks/useStackAnimations';
+import { useAnimationPerformance } from '../hooks/useAnimationPerformance';
+import { AnimationSettings } from './AnimationSettings';
+import { DEFAULT_ANIMATION_CONFIG } from '../utils/animation';
 
 interface StackFramesProps {
   frames: StackFrame[];
@@ -10,6 +14,9 @@ interface StackFramesProps {
   showVariables?: boolean;
   compact?: boolean;
   title?: string;
+  animationConfig?: AnimationConfig;
+  onAnimationConfigChange?: (config: AnimationConfig) => void;
+  showAnimationSettings?: boolean;
 }
 
 export const StackFrames: React.FC<StackFramesProps> = ({
@@ -18,12 +25,99 @@ export const StackFrames: React.FC<StackFramesProps> = ({
   onFrameClick,
   showVariables = true,
   compact = false,
-  title = 'Call Stack'
+  title = 'Call Stack',
+  animationConfig = DEFAULT_ANIMATION_CONFIG,
+  onAnimationConfigChange,
+  showAnimationSettings = true
 }) => {
   const [collapsedFrames, setCollapsedFrames] = useState<Set<string>>(new Set());
   const [showAll, setShowAll] = useState(false);
+  const [prevFrames, setPrevFrames] = useState<StackFrame[]>([]);
 
-  const sortedFrames = [...frames].sort((a, b) => a.depth - b.depth);
+  // Animation hooks
+  const {
+    animateFrameEntry,
+    animateFrameExit,
+    animateFrameUpdate,
+    animateFrameActivation,
+    animateBatchEntry,
+    animateBatchExit,
+    frameStates,
+  } = useStackAnimations(frames, {
+    config: animationConfig,
+    onAnimationStart: (animation) => {
+      console.debug('Animation started:', animation.type, animation.frameId);
+    },
+    onAnimationEnd: (animation) => {
+      console.debug('Animation completed:', animation.type, animation.frameId);
+    }
+  });
+
+  // Performance monitoring
+  const {
+    metrics,
+    optimizedConfig: performanceConfig,
+    optimizeForPerformance,
+    resetOptimization,
+    isOptimized
+  } = useAnimationPerformance(frames, animationConfig, {
+    enableMonitoring: animationConfig.enableAnimations,
+    autoOptimize: true
+  });
+
+  // Detect frame changes and trigger animations
+  const sortedFrames = useMemo(() => {
+    const sorted = [...frames].sort((a, b) => a.depth - b.depth);
+    
+    // Detect changes and trigger animations
+    if (animationConfig.enableAnimations && !animationConfig.reducedMotion) {
+      const prevFrameIds = new Set(prevFrames.map(f => f.id));
+      const currentFrameIds = new Set(sorted.map(f => f.id));
+      
+      // New frames (entries)
+      const newFrames = sorted.filter(frame => !prevFrameIds.has(frame.id));
+      if (newFrames.length > 0) {
+        if (newFrames.length === 1) {
+          animateFrameEntry(newFrames[0]);
+        } else {
+          animateBatchEntry(newFrames);
+        }
+      }
+      
+      // Removed frames (exits)
+      const removedFrameIds = prevFrames
+        .filter(frame => !currentFrameIds.has(frame.id))
+        .map(frame => frame.id);
+      if (removedFrameIds.length > 0) {
+        if (removedFrameIds.length === 1) {
+          animateFrameExit(removedFrameIds[0]);
+        } else {
+          animateBatchExit(removedFrameIds);
+        }
+      }
+      
+      // Updated frames
+      sorted.forEach(frame => {
+        const prevFrame = prevFrames.find(f => f.id === frame.id);
+        if (prevFrame) {
+          // Check for changes that warrant animation
+          if (frame.isActive !== prevFrame.isActive) {
+            animateFrameActivation(frame.id, frame.isActive);
+          } else if (
+            frame.parameters !== prevFrame.parameters ||
+            frame.localVariables !== prevFrame.localVariables ||
+            frame.currentLine !== prevFrame.currentLine
+          ) {
+            animateFrameUpdate(frame);
+          }
+        }
+      });
+    }
+    
+    setPrevFrames(sorted);
+    return sorted;
+  }, [frames, prevFrames, animationConfig, animateFrameEntry, animateFrameExit, animateFrameUpdate, animateFrameActivation, animateBatchEntry, animateBatchExit]);
+
   const totalFrames = sortedFrames.length;
   const hasOverflow = totalFrames > maxVisibleFrames;
   
@@ -82,9 +176,23 @@ export const StackFrames: React.FC<StackFramesProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+    <div className="space-y-4">
+      {/* Animation Settings */}
+      {showAnimationSettings && onAnimationConfigChange && (
+        <AnimationSettings
+          config={performanceConfig}
+          onChange={onAnimationConfigChange}
+          performanceMetrics={metrics}
+          onOptimize={() => optimizeForPerformance('moderate')}
+          isOptimized={isOptimized}
+          onReset={resetOptimization}
+        />
+      )}
+
+      {/* Stack Frames Container */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Layers size={18} className="text-gray-600" />
@@ -143,6 +251,8 @@ export const StackFrames: React.FC<StackFramesProps> = ({
                 onFrameClick={onFrameClick}
                 showVariables={showVariables}
                 compact={compact}
+                animationState={frameStates.get(frame.id)}
+                animationSpeed={performanceConfig.speed}
               />
             ))}
 
@@ -191,6 +301,7 @@ export const StackFrames: React.FC<StackFramesProps> = ({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

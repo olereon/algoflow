@@ -149,4 +149,52 @@ export interface FrameComponentProps {
   onFrameClick?: (frameId: string) => void;
   showVariables?: boolean;
   compact?: boolean;
+  animationState?: FrameAnimationState;
+  animationSpeed?: AnimationSpeed;
+}
+
+export type AnimationSpeed = 'slow' | 'normal' | 'fast' | 'instant';
+
+export type FrameAnimationState = 
+  | 'entering' 
+  | 'entered' 
+  | 'exiting' 
+  | 'exited' 
+  | 'updating' 
+  | 'idle';
+
+export interface AnimationConfig {
+  speed: AnimationSpeed;
+  enableAnimations: boolean;
+  reducedMotion: boolean;
+  maxConcurrentAnimations: number;
+  easing: 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
+}
+
+export interface FrameAnimation {
+  id: string;
+  frameId: string;
+  type: 'enter' | 'exit' | 'update' | 'activate' | 'deactivate';
+  startTime: number;
+  duration: number;
+  easing: string;
+  fromState: Partial<StackFrame>;
+  toState: Partial<StackFrame>;
+  progress: number;
+  status: 'pending' | 'running' | 'completed' | 'cancelled';
+}
+
+export interface AnimationQueue {
+  animations: FrameAnimation[];
+  running: Map<string, FrameAnimation>;
+  completed: FrameAnimation[];
+  maxConcurrent: number;
+  paused: boolean;
+}
+
+export interface UseStackAnimationOptions {
+  config: AnimationConfig;
+  onAnimationStart?: (animation: FrameAnimation) => void;
+  onAnimationEnd?: (animation: FrameAnimation) => void;
+  onQueueEmpty?: () => void;
 }
