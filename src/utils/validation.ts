@@ -21,9 +21,16 @@ export function validatePseudocode(parsedLines: ParsedLine[]): ValidationResult 
   let openLoops = 0;
   
   parsedLines.forEach((line, index) => {
+    // Opening conditions
     if (line.blockType === 'condition' && !line.isClosing) {
       openConditions++;
-    } else if (line.blockType === 'condition' && line.isClosing) {
+    } 
+    // Closing conditions (condition blocks marked as closing)
+    else if (line.blockType === 'condition' && line.isClosing) {
+      openConditions--;
+    }
+    // Handle "End if", "End else", etc. statements that close conditions
+    else if (line.isClosing && /^end\s+(if|else|condition)/i.test(line.content)) {
       openConditions--;
     }
     
@@ -138,6 +145,73 @@ export function validateRecursiveFunction(func: FunctionDefinition): ValidationR
 }
 
 /**
+ * Validates function definition structure (separate from main flow validation)
+ */
+export function validateFunctionDefinition(parsedLines: ParsedLine[]): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  
+  // Functions should NOT have START/END blocks (they're not main flow)
+  // Instead, they should have parameters and return statements
+  
+  // Check for proper return statements
+  const hasReturn = parsedLines.some(line => line.blockType === 'return');
+  if (!hasReturn) {
+    warnings.push('Function should have at least one return statement');
+  }
+  
+  // Check for unclosed conditions (enhanced logic for functions)
+  let openConditions = 0;
+  let openLoops = 0;
+  
+  parsedLines.forEach((line, index) => {
+    // Opening conditions
+    if (line.blockType === 'condition' && !line.isClosing) {
+      openConditions++;
+    } 
+    // Closing conditions (condition blocks marked as closing)
+    else if (line.blockType === 'condition' && line.isClosing) {
+      openConditions--;
+    }
+    // Handle "End if", "End else", etc. statements that close conditions
+    else if (line.isClosing && /^end\s+(if|else|condition)/i.test(line.content)) {
+      openConditions--;
+    }
+    
+    if (line.blockType === 'loop') {
+      openLoops++;
+      
+      // Check for potential infinite loops
+      const nextLines = parsedLines.slice(index + 1, index + 10);
+      const hasLoopControl = nextLines.some(l => 
+        l.content.toLowerCase().includes('break') ||
+        l.content.toLowerCase().includes('continue') ||
+        l.content.toLowerCase().includes('increment') ||
+        l.content.toLowerCase().includes('decrement')
+      );
+      
+      if (!hasLoopControl) {
+        warnings.push(`Potential infinite loop detected at line ${index + 1}`);
+      }
+    }
+  });
+  
+  if (openConditions > 0) {
+    errors.push(`${openConditions} unclosed condition block(s)`);
+  }
+  
+  if (openLoops > 0) {
+    warnings.push(`${openLoops} unclosed loop(s) - ensure proper loop termination`);
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings
+  };
+}
+
+/**
  * Validates all functions including recursive ones
  */
 export function validateFunctions(functions: FunctionDefinition[]): ValidationResult {
@@ -145,8 +219,8 @@ export function validateFunctions(functions: FunctionDefinition[]): ValidationRe
   const allWarnings: string[] = [];
   
   functions.forEach(func => {
-    // Validate function structure
-    const funcValidation = validatePseudocode(func.blocks);
+    // Validate function structure using function-specific validation
+    const funcValidation = validateFunctionDefinition(func.blocks);
     allErrors.push(...funcValidation.errors.map(e => `In function '${func.name}': ${e}`));
     allWarnings.push(...funcValidation.warnings.map(w => `In function '${func.name}': ${w}`));
     
