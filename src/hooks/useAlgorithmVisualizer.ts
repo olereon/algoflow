@@ -1,9 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Project, FunctionDefinition } from '../types';
+import { Project, FunctionDefinition, RecursionMetadata } from '../types';
 import { InfiniteCanvasRef } from '../components/InfiniteCanvas';
 import { DEFAULT_PROJECT } from '../constants';
 import { parsePseudocode, extractFunctions } from '../utils/parser';
-import { validatePseudocode } from '../utils/validation';
+import { validatePseudocode, validateFunctions } from '../utils/validation';
 import { layoutBlocks } from '../utils/diagram';
 import { exportToPng } from '../utils/export';
 import { saveProject, updateProject, loadProjects, deleteProject } from '../utils/storage';
@@ -30,8 +30,24 @@ export function useAlgorithmVisualizer() {
   
   // Parse and validate pseudocode
   const { mainFlow, functions } = extractFunctions(pseudocode);
-  const parsedLines = parsePseudocode(mainFlow);
-  const validation = validatePseudocode(parsedLines);
+  
+  // Create function metadata map for recursive function detection
+  const functionMetadata = new Map(
+    functions.map(func => [func.name.toLowerCase(), func.recursion])
+      .filter(([, recursion]) => recursion !== undefined) as [string, RecursionMetadata][]
+  );
+  
+  const parsedLines = parsePseudocode(mainFlow, functionMetadata);
+  const mainValidation = validatePseudocode(parsedLines);
+  const functionValidation = validateFunctions(functions);
+  
+  // Combine validations
+  const validation = {
+    isValid: mainValidation.isValid && functionValidation.isValid,
+    errors: [...mainValidation.errors, ...functionValidation.errors],
+    warnings: [...mainValidation.warnings, ...functionValidation.warnings]
+  };
+  
   const blocks = layoutBlocks(parsedLines);
   
   // Process function definitions with their own layout

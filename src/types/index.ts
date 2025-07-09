@@ -5,6 +5,7 @@ export interface ParsedLine {
   indentLevel: number;
   blockType: BlockType;
   isClosing?: boolean;
+  isRecursiveCall?: boolean; // Indicates if this is a call to a recursive function
 }
 
 export interface BlockPosition {
@@ -27,6 +28,7 @@ export interface DiagramBlock extends ParsedLine {
   position: BlockPosition;
   connections: Connection[];
   functionName?: string; // For function call blocks
+  recursiveCallInfo?: RecursiveCallPoint; // For blocks that are recursive calls
 }
 
 export interface RecursiveCallPoint {
@@ -34,22 +36,52 @@ export interface RecursiveCallPoint {
   content: string;
   parameters: string[];
   isBaseCase: boolean;
+  parameterTransformations?: ParameterTransformation[];
 }
 
+export interface ParameterTransformation {
+  parameterName: string;
+  originalValue: string;
+  transformedValue: string;
+  transformationType: 'decrement' | 'increment' | 'divide' | 'multiply' | 'property-access' | 'other';
+  description?: string; // e.g., "n-1", "n/2", "node.left"
+}
+
+export interface BaseCase {
+  condition: string;
+  returnValue?: string;
+  exitType: 'return' | 'break' | 'continue' | 'empty';
+  comparisonOperator?: '==' | '<=' | '>=' | '<' | '>' | '!=' | 'is' | 'is not';
+  comparisonValue?: string;
+}
+
+export interface RecursiveCase {
+  callExpression: string;
+  parameters: string[];
+  transformations: ParameterTransformation[];
+  operation?: 'single' | 'add' | 'multiply' | 'combine' | 'other';
+  operationDescription?: string; // e.g., "n * factorial(n-1)"
+}
+
+export type RecursionType = 'linear' | 'tree' | 'tail' | 'mutual' | 'nested' | 'multiple';
+
 export interface RecursionPattern {
-  type: 'factorial' | 'fibonacci' | 'tree-traversal' | 'generic';
+  type: 'factorial' | 'fibonacci' | 'tree-traversal' | 'binary-search' | 'merge-sort' | 'quick-sort' | 'generic';
   confidence: number; // 0-1 score for pattern match
-  baseCase?: string;
-  recursiveCase?: string;
+  baseCase?: string; // Deprecated - use baseCases array
+  recursiveCase?: string; // Deprecated - use recursiveCases array
 }
 
 export interface RecursionMetadata {
   isRecursive: boolean;
+  recursionType: RecursionType;
   callPoints: RecursiveCallPoint[];
   pattern?: RecursionPattern;
-  baseCases: string[];
-  recursiveCases: string[];
+  baseCases: BaseCase[];
+  recursiveCases: RecursiveCase[];
   maxDepthHint?: number;
+  depthCalculation?: string; // e.g., "log(n)", "n", "2^n"
+  parameterFlow?: Map<string, string[]>; // Maps parameter names to their transformation chain
 }
 
 export interface FunctionDefinition {

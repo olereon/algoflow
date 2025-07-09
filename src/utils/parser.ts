@@ -1,4 +1,4 @@
-import { BlockType, ParsedLine, FunctionDefinition, RecursiveCallPoint, RecursionPattern, RecursionMetadata } from '../types';
+import { BlockType, ParsedLine, FunctionDefinition, RecursiveCallPoint, RecursionPattern, RecursionMetadata, BaseCase, RecursiveCase, ParameterTransformation, RecursionType } from '../types';
 import { KEYWORD_PATTERNS } from '../constants';
 
 export function detectBlockType(line: string): BlockType {
@@ -15,7 +15,7 @@ export function detectBlockType(line: string): BlockType {
   return 'process'; // Default block type
 }
 
-export function parsePseudocode(pseudocode: string): ParsedLine[] {
+export function parsePseudocode(pseudocode: string, functionMetadata?: Map<string, RecursionMetadata>): ParsedLine[] {
   const lines = pseudocode.split('\n').filter(line => line.trim());
   const parsedLines: ParsedLine[] = [];
   let currentIndentLevel = 0;
@@ -59,11 +59,26 @@ export function parsePseudocode(pseudocode: string): ParsedLine[] {
     }
     
     
+    // Check if this is a function call and if the function is recursive
+    let isRecursiveCall = false;
+    if (blockType === 'function' && functionMetadata) {
+      // Extract function name from call
+      const callMatch = content.match(/call\s+(\w+)/i);
+      if (callMatch) {
+        const functionName = callMatch[1];
+        const metadata = functionMetadata.get(functionName.toLowerCase());
+        if (metadata?.isRecursive) {
+          isRecursiveCall = true;
+        }
+      }
+    }
+    
     parsedLines.push({
       content,
       indentLevel: currentIndentLevel,
       blockType,
-      isClosing
+      isClosing,
+      ...(isRecursiveCall && { isRecursiveCall })
     });
   }
 
@@ -209,6 +224,21 @@ function analyzeRecursionPattern(_functionName: string, functionLines: string[],
       type: 'tree-traversal',
       keywords: ['tree', 'node', 'left', 'right', 'child', 'parent', 'traverse', 'visit'],
       confidence: 0
+    },
+    {
+      type: 'binary-search',
+      keywords: ['binary', 'search', 'mid', 'middle', 'low', 'high', 'n/2', 'n / 2'],
+      confidence: 0
+    },
+    {
+      type: 'merge-sort',
+      keywords: ['merge', 'sort', 'divide', 'conquer', 'left', 'right', 'mid'],
+      confidence: 0
+    },
+    {
+      type: 'quick-sort',
+      keywords: ['quick', 'sort', 'pivot', 'partition', 'left', 'right'],
+      confidence: 0
     }
   ];
   
@@ -286,14 +316,143 @@ function extractRecursiveCase(functionLines: string[], callPoints: RecursiveCall
 }
 
 /**
+ * Extracts parameter transformations from a recursive call
+ */
+function extractParameterTransformations(callContent: string, functionName: string, originalParams: string[]): ParameterTransformation[] {
+  const transformations: ParameterTransformation[] = [];
+  
+  // Extract parameters from the call
+  const paramMatch = callContent.match(new RegExp(`${functionName}\\s*\\(([^)]*)\\)`, 'i'));
+  if (!paramMatch) return transformations;
+  
+  const callParams = paramMatch[1].split(',').map(p => p.trim());
+  
+  callParams.forEach((param, index) => {
+    if (index >= originalParams.length) return;
+    
+    const originalParam = originalParams[index];
+    let transformationType: ParameterTransformation['transformationType'] = 'other';
+    let description = param;
+    
+    // Detect transformation types
+    if (/\bn\s*-\s*1\b/i.test(param)) {
+      transformationType = 'decrement';
+      description = 'n-1';
+    } else if (/\bn\s*-\s*2\b/i.test(param)) {
+      transformationType = 'decrement';
+      description = 'n-2';
+    } else if (/\bn\s*\+\s*1\b/i.test(param)) {
+      transformationType = 'increment';
+      description = 'n+1';
+    } else if (/\bn\s*\/\s*2\b/i.test(param)) {
+      transformationType = 'divide';
+      description = 'n/2';
+    } else if (/\bn\s*\*\s*2\b/i.test(param)) {
+      transformationType = 'multiply';
+      description = 'n*2';
+    } else if (/\.(left|right|next|prev|parent|child)/i.test(param)) {
+      transformationType = 'property-access';
+      description = param;
+    }
+    
+    transformations.push({
+      parameterName: originalParam,
+      originalValue: originalParam,
+      transformedValue: param,
+      transformationType,
+      description
+    });
+  });
+  
+  return transformations;
+}
+
+/**
+ * Extracts base cases with detailed information
+ */
+function parseBaseCase(caseContent: string[]): BaseCase {
+  const condition = caseContent[0] || '';
+  let returnValue: string | undefined;
+  let exitType: BaseCase['exitType'] = 'return';
+  let comparisonOperator: BaseCase['comparisonOperator'];
+  let comparisonValue: string | undefined;
+  
+  // Find return statement
+  const returnLine = caseContent.find(line => /^return/i.test(line.trim()));
+  if (returnLine) {
+    const returnMatch = returnLine.match(/^return\s*(.*)$/i);
+    returnValue = returnMatch?.[1]?.trim();
+  }
+  
+  // Detect exit type
+  if (caseContent.some(line => /\bbreak\b/i.test(line))) exitType = 'break';
+  else if (caseContent.some(line => /\bcontinue\b/i.test(line))) exitType = 'continue';
+  else if (!returnLine) exitType = 'empty';
+  
+  // Parse comparison operator
+  const operatorMatch = condition.match(/\b(==|<=|>=|<|>|!=|\bis\s+not\b|\bis\b)/i);
+  if (operatorMatch) {
+    const op = operatorMatch[1].toLowerCase();
+    if (op === 'is') comparisonOperator = 'is';
+    else if (op === 'is not') comparisonOperator = 'is not';
+    else comparisonOperator = op as BaseCase['comparisonOperator'];
+    
+    // Extract comparison value
+    const valueMatch = condition.match(new RegExp(`${operatorMatch[1]}\\s*(.+?)(?:\\:|$)`, 'i'));
+    comparisonValue = valueMatch?.[1]?.trim();
+  }
+  
+  return {
+    condition: condition.trim(),
+    returnValue,
+    exitType,
+    comparisonOperator,
+    comparisonValue
+  };
+}
+
+/**
+ * Extracts recursive cases with detailed information
+ */
+function parseRecursiveCase(caseContent: string[], callPoint: RecursiveCallPoint, functionName: string, originalParams: string[]): RecursiveCase {
+  const callExpression = callPoint.content;
+  const transformations = extractParameterTransformations(callExpression, functionName, originalParams);
+  
+  // Detect operation type
+  let operation: RecursiveCase['operation'] = 'single';
+  let operationDescription: string | undefined;
+  
+  const fullCase = caseContent.join(' ');
+  if (/\+/.test(fullCase) && callPoint.parameters.length > 1) {
+    operation = 'add';
+    operationDescription = fullCase;
+  } else if (/\*/.test(fullCase) && callPoint.parameters.length >= 1) {
+    operation = 'multiply';
+    operationDescription = fullCase;
+  } else if (callPoint.parameters.length > 1) {
+    operation = 'combine';
+    operationDescription = fullCase;
+  }
+  
+  return {
+    callExpression,
+    parameters: callPoint.parameters,
+    transformations,
+    operation,
+    operationDescription
+  };
+}
+
+/**
  * Extracts base and recursive cases from function body
  */
-function extractCases(functionLines: string[], callPoints: RecursiveCallPoint[]): { baseCases: string[], recursiveCases: string[] } {
-  const baseCases: string[] = [];
-  const recursiveCases: string[] = [];
+function extractCases(functionName: string, functionLines: string[], callPoints: RecursiveCallPoint[], originalParams: string[]): { baseCases: BaseCase[], recursiveCases: RecursiveCase[] } {
+  const baseCases: BaseCase[] = [];
+  const recursiveCases: RecursiveCase[] = [];
   
   let inConditional = false;
   let currentCase: string[] = [];
+  let currentCallPoint: RecursiveCallPoint | undefined;
   
   for (let i = 0; i < functionLines.length; i++) {
     const line = functionLines[i];
@@ -309,19 +468,21 @@ function extractCases(functionLines: string[], callPoints: RecursiveCallPoint[])
     // End of conditional block
     if (/^end\s+(if|condition)/i.test(trimmed)) {
       if (currentCase.length > 0) {
-        const caseContent = currentCase.join(' ');
-        const hasRecursiveCall = callPoints.some(cp => 
-          currentCase.some(caseLine => caseLine.includes(cp.content))
-        );
+        const hasRecursiveCall = callPoints.some(cp => {
+          const found = currentCase.some(caseLine => caseLine.includes(cp.content));
+          if (found) currentCallPoint = cp;
+          return found;
+        });
         
-        if (hasRecursiveCall) {
-          recursiveCases.push(caseContent);
-        } else if (caseContent.toLowerCase().includes('return')) {
-          baseCases.push(caseContent);
+        if (hasRecursiveCall && currentCallPoint) {
+          recursiveCases.push(parseRecursiveCase(currentCase, currentCallPoint, functionName, originalParams));
+        } else if (currentCase.some(line => /return/i.test(line))) {
+          baseCases.push(parseBaseCase(currentCase));
         }
       }
       inConditional = false;
       currentCase = [];
+      currentCallPoint = undefined;
       continue;
     }
     
@@ -334,7 +495,7 @@ function extractCases(functionLines: string[], callPoints: RecursiveCallPoint[])
     if (trimmed.startsWith('return') && !inConditional) {
       const hasRecursiveCall = callPoints.some(cp => cp.lineIndex === i);
       if (!hasRecursiveCall) {
-        baseCases.push(line.trim());
+        baseCases.push(parseBaseCase([line.trim()]));
       }
     }
   }
@@ -352,6 +513,7 @@ function analyzeRecursion(functionName: string, functionLines: string[]): Recurs
   if (!isRecursive) {
     return {
       isRecursive: false,
+      recursionType: 'linear',
       callPoints: [],
       baseCases: [],
       recursiveCases: []
@@ -359,25 +521,64 @@ function analyzeRecursion(functionName: string, functionLines: string[]): Recurs
   }
   
   const pattern = analyzeRecursionPattern(functionName, functionLines, callPoints);
-  const { baseCases, recursiveCases } = extractCases(functionLines, callPoints);
   
-  // Estimate maximum depth based on pattern
+  // Extract function parameters
+  const functionHeader = functionLines[0] || '';
+  const paramMatch = functionHeader.match(/\(([^)]*)\)/);
+  const originalParams = paramMatch ? paramMatch[1].split(',').map(p => p.trim()).filter(p => p) : [];
+  
+  const { baseCases, recursiveCases } = extractCases(functionName, functionLines, callPoints, originalParams);
+  
+  // Determine recursion type
+  let recursionType: RecursionType = 'linear';
+  if (callPoints.length > 1) {
+    // Check if calls are to same function (tree) or different functions (mutual)
+    const uniqueFunctions = new Set(callPoints.map(cp => {
+      const match = cp.content.match(/\b(\w+)\s*\(/);
+      return match?.[1]?.toLowerCase();
+    }));
+    
+    if (uniqueFunctions.size > 1) {
+      recursionType = 'mutual';
+    } else if (pattern?.type === 'tree-traversal' || callPoints.some(cp => cp.content.includes('left') || cp.content.includes('right'))) {
+      recursionType = 'tree';
+    } else {
+      recursionType = 'multiple';
+    }
+  } else if (callPoints.length === 1) {
+    // Check for tail recursion
+    const lastNonEmptyLine = functionLines.filter(line => line.trim()).pop()?.trim().toLowerCase();
+    if (lastNonEmptyLine?.includes('return') && lastNonEmptyLine.includes(functionName.toLowerCase())) {
+      recursionType = 'tail';
+    }
+  }
+  
+  // Estimate maximum depth based on pattern and recursion type
   let maxDepthHint: number | undefined;
+  let depthCalculation: string | undefined;
+  
   if (pattern?.type === 'factorial' || pattern?.type === 'fibonacci') {
     // Look for parameter hints in base cases
-    const depthMatch = baseCases.join(' ').match(/(\d+)/);
+    const depthMatch = baseCases.map(bc => bc.comparisonValue).join(' ').match(/(\d+)/);
     maxDepthHint = depthMatch ? parseInt(depthMatch[1]) + 5 : 10;
-  } else if (pattern?.type === 'tree-traversal') {
+    depthCalculation = recursionType === 'linear' ? 'n' : '2^n';
+  } else if (pattern?.type === 'tree-traversal' || recursionType === 'tree') {
     maxDepthHint = 20; // Typical tree depth
+    depthCalculation = 'log(n)';
+  } else if (pattern?.type === 'binary-search') {
+    maxDepthHint = 15;
+    depthCalculation = 'log(n)';
   }
   
   return {
     isRecursive,
+    recursionType,
     callPoints,
     pattern,
     baseCases,
     recursiveCases,
-    maxDepthHint
+    maxDepthHint,
+    depthCalculation
   };
 }
 
