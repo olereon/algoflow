@@ -32,6 +32,9 @@ src/
 │   ├── FlowchartDiagram.tsx     # Static flowchart renderer
 │   ├── FunctionPopup.tsx        # Movable function definition popup
 │   ├── InfiniteCanvas.tsx       # Pannable/zoomable canvas with auto-fit
+│   ├── StackFrame.tsx           # Individual stack frame visualization
+│   ├── StackFrames.tsx          # Stack frame container with overflow handling
+│   ├── StackFrameDemo.tsx       # Demo component for stack frames
 │   └── Toolbar.tsx              # File operations toolbar
 ├── types/           # TypeScript type definitions
 ├── utils/           # Utility functions
@@ -78,6 +81,21 @@ src/
 - Depth labels (L1, L2, etc.) for complex nested structures
 - Proper indent-based scope detection
 
+#### Comprehensive Recursive Function Analysis (NEW)
+- **Parameter Transformation Tracking**: Detects changes like n-1, node.left, n/2
+- **Base Case Detection**: Identifies exit conditions with comparison operators
+- **Recursion Type Classification**: Linear, tree, tail, mutual, nested recursion
+- **Stack Overflow Prevention**: Warnings for deep recursion (20+, 100+ frames)
+- **Visual Stack Frames**: Interactive call stack visualization with variable tracking
+
+#### Stack Frame Visualization (NEW)
+- **Interactive Stack Frames**: Visual representation of function call stacks
+- **Active/Inactive States**: Clear distinction between executing and completed frames
+- **Variable Tracking**: Parameters, local variables, and return values with type highlighting
+- **Overflow Handling**: Manages deep stacks with collapse/expand and "show more" functionality
+- **Depth Indicators**: Color-coded depth levels (L1, L2, etc.) with visual hierarchy
+- **Performance Optimized**: Handles 100+ stack frames with warnings and efficient rendering
+
 #### Optimized Layout System
 - Smart END block placement below lowest content block
 - 25% longer arrow spacing than block height for readability
@@ -87,13 +105,15 @@ src/
 
 ### Core Features
 1. **Enhanced Conditional Logic**: Multi-way IF/ELSE IF/ELSE chains with proper cascading layout
-2. **Advanced Pseudocode Parsing**: Function extraction with parameter detection
-3. **14 Block Types**: start, end, process, condition, else-if, switch, case, loop, input, output, function, function-def, return, comment, connector
-4. **Smart Detection**: Context-aware block type suggestions with keyword patterns
-5. **Project Management**: Save/load with localStorage persistence
-6. **Export**: PNG generation with white background
-7. **Interactive Canvas**: Pan, zoom, and auto-fit functionality
-8. **Function Definitions**: Separate popup display with movable windows
+2. **Advanced Pseudocode Parsing**: Function extraction with parameter detection and recursion analysis
+3. **Comprehensive Recursion Support**: Parameter transformation tracking, base case detection, stack visualization
+4. **Interactive Stack Frames**: Visual call stack with variable tracking and overflow handling
+5. **14 Block Types**: start, end, process, condition, else-if, switch, case, loop, input, output, function, function-def, return, comment, connector
+6. **Smart Detection**: Context-aware block type suggestions with keyword patterns
+7. **Project Management**: Save/load with localStorage persistence
+8. **Export**: PNG generation with white background
+9. **Interactive Canvas**: Pan, zoom, and auto-fit functionality
+10. **Function Definitions**: Separate popup display with movable windows
 
 ### Block Types and Shapes
 - **Start/End**: Rounded rectangles (green/red)
@@ -122,6 +142,8 @@ src/
 - localStorage for project persistence
 - Function definition extraction and separate rendering
 - Real-time validation with error/warning display
+- Recursive function metadata tracking and analysis
+- Stack frame state management with overflow handling
 
 ### Styling
 - Tailwind CSS with utility-first approach

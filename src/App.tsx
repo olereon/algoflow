@@ -85,7 +85,7 @@ export default function App() {
               const cursorPosition = textarea.selectionStart;
               const lines = pseudocode.substring(0, cursorPosition).split('\n');
               const lineIndex = lines.length - 1;
-              handleLineClick(lineIndex, e as any);
+              handleLineClick(lineIndex, e as any, cursorPosition);
             }
           }}>
             <Editor

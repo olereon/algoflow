@@ -111,3 +111,42 @@ export interface ExportOptions {
   scale?: number;
   backgroundColor?: string;
 }
+
+export interface FrameVariable {
+  name: string;
+  value: any;
+  type: string;
+  isParameter?: boolean;
+  isChanged?: boolean; // Highlight if value changed in current step
+}
+
+export interface StackFrame {
+  id: string;
+  functionName: string;
+  parameters: FrameVariable[];
+  localVariables: FrameVariable[];
+  returnValue?: any;
+  currentLine?: number;
+  callSite?: string; // Where this function was called from
+  depth: number; // Stack depth (0 = main, 1 = first call, etc.)
+  isActive: boolean; // Currently executing frame
+  isCollapsed?: boolean; // For deep stacks
+  timestamp: number; // When frame was created
+}
+
+export interface StackFrameState {
+  frames: StackFrame[];
+  maxVisibleFrames: number;
+  showCollapsedIndicator: boolean;
+  totalFrames: number;
+}
+
+export interface FrameComponentProps {
+  frame: StackFrame;
+  isActive: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: (frameId: string) => void;
+  onFrameClick?: (frameId: string) => void;
+  showVariables?: boolean;
+  compact?: boolean;
+}

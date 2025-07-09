@@ -120,6 +120,21 @@ suggestBlockType(text) {
 - **Loop Visualization**: Color-coded loop-back arrows with depth indicators
 - **Professional Styling**: Right-angle connections with no curves or duplicate arrows
 
+#### 🧠 Comprehensive Recursion Analysis
+- **Parameter Transformation Tracking**: Automatically detects how parameters change (n-1, node.left, n/2)
+- **Base Case Detection**: Identifies exit conditions with comparison operators
+- **Recursion Type Classification**: Distinguishes linear, tree, tail, mutual, and nested recursion
+- **Stack Overflow Prevention**: Provides warnings for deep recursion (20+, 100+ frames)
+- **Interactive Stack Visualization**: Visual call stack with variable tracking and state management
+
+#### 📊 Interactive Stack Frame Visualization
+- **Active/Inactive States**: Clear visual distinction between executing and completed frames
+- **Variable Tracking**: Real-time display of parameters, local variables, and return values
+- **Type Highlighting**: Color-coded variable types (numbers, strings, objects, etc.)
+- **Overflow Management**: Handles deep stacks with collapse/expand and "show more" functionality
+- **Depth Indicators**: Color-coded depth levels (L1, L2, etc.) with visual hierarchy
+- **Performance Optimized**: Efficiently renders 100+ stack frames with smart warnings
+
 #### 💾 Project Management
 - **Save/Load Projects**: Persistent storage with project naming
 - **Export Options**: Download as PNG images or text descriptions
@@ -129,7 +144,9 @@ suggestBlockType(text) {
 - **Structure Validation**: Checks for missing start/end blocks
 - **Loop Analysis**: Detects potential infinite loops
 - **Conditional Logic**: Validates IF statement completeness
-- **Real-time Feedback**: Visual indicators for issues
+- **Recursive Function Validation**: Ensures base cases exist and parameter transformations converge
+- **Stack Overflow Detection**: Warns about deep recursion and infinite recursion risks
+- **Real-time Feedback**: Visual indicators for issues with detailed error descriptions
 
 ### User Interface Features
 
@@ -168,6 +185,21 @@ suggestBlockType(text) {
 - [x] Content blocks aligned below parent conditionals
 - [x] Switch/case statement visualization
 - [x] Simplified connection algorithm eliminating duplicates
+
+**Comprehensive Recursion Analysis (100% Complete - NEW)**
+- [x] Parameter transformation detection (n-1, node.left, n/2, etc.)
+- [x] Base case and recursive case extraction
+- [x] Recursion type classification (linear, tree, tail, mutual, nested)
+- [x] Stack overflow prevention with depth warnings
+- [x] Recursive function call marking in main flow
+
+**Interactive Stack Frame Visualization (100% Complete - NEW)**
+- [x] Individual stack frame components with active/inactive states
+- [x] Variable tracking with parameter and local variable display
+- [x] Type highlighting and change detection
+- [x] Overflow handling for deep stacks (100+ frames)
+- [x] Collapse/expand functionality with bulk operations
+- [x] Performance optimization with efficient rendering
 
 **Advanced Visualization (100% Complete)**
 - [x] Enhanced YES/NO branching with optimized label positioning
@@ -408,6 +440,39 @@ For each item in list::
 End for loop::
 Call function to cleanup::
 End algorithm::
+```
+
+### Recursive Algorithm Example
+```
+Start::
+Input n::
+Call factorial(n)::
+Output result::
+End::
+
+Function factorial(n)::
+  If n <= 1::
+    Return 1::
+  End if::
+  Return n * call factorial(n-1)::
+End function::
+```
+
+### Tree Traversal with Stack Visualization
+```
+Start::
+Input tree root::
+Call traverse(root)::
+End::
+
+Function traverse(node)::
+  If node is null::
+    Return::
+  End if::
+  Process node::
+  Call traverse(node.left)::
+  Call traverse(node.right)::
+End function::
 ```
 
 ## 🤝 Contributing

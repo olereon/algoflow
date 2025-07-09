@@ -75,9 +75,18 @@ export function useAlgorithmVisualizer() {
   }, [functions]);
   
   // Handle line click in editor
-  const handleLineClick = useCallback((lineIndex: number, event: React.MouseEvent) => {
-    const line = pseudocode.split('\n')[lineIndex];
-    if (line?.trim().endsWith('::')) {
+  const handleLineClick = useCallback((lineIndex: number, event: React.MouseEvent, cursorPosition: number) => {
+    const lines = pseudocode.split('\n');
+    const line = lines[lineIndex];
+    if (!line) return;
+    
+    // Calculate the character position within the current line
+    const charsBeforeLine = lines.slice(0, lineIndex).reduce((sum, l) => sum + l.length + 1, 0);
+    const positionInLine = cursorPosition - charsBeforeLine;
+    
+    // Check if the line ends with :: and if the click is on the ::
+    const doubleColonIndex = line.lastIndexOf('::');
+    if (doubleColonIndex !== -1 && positionInLine >= doubleColonIndex && positionInLine <= doubleColonIndex + 2) {
       setSelectorPosition({ x: event.clientX, y: event.clientY });
       setSelectedLineIndex(lineIndex);
       setShowBlockSelector(true);
