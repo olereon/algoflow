@@ -6,9 +6,10 @@ import { InfiniteCanvas } from './InfiniteCanvas';
 interface FunctionPopupProps {
   functionDef: FunctionDefinition;
   onClose: () => void;
+  zIndex?: number;
 }
 
-export const FunctionPopup: React.FC<FunctionPopupProps> = ({ functionDef, onClose }) => {
+export const FunctionPopup: React.FC<FunctionPopupProps> = ({ functionDef, onClose, zIndex = 50 }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -59,7 +60,8 @@ export const FunctionPopup: React.FC<FunctionPopupProps> = ({ functionDef, onClo
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 z-50"
+      className="fixed inset-0 bg-black bg-opacity-50"
+      style={{ zIndex }}
       onClick={handleBackdropClick}
     >
       <div 

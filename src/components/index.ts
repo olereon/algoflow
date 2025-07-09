@@ -15,4 +15,5 @@ export { DepthCounter, DepthLegend } from './DepthCounter';
 export { CollapsibleStackSection } from './CollapsibleStackSection';
 export { AccessibilitySettings } from './AccessibilitySettings';
 export { EnhancedDepthDemo } from './EnhancedDepthDemo';
+export { IntegratedStackVisualizer } from './IntegratedStackVisualizer';
 export { Toolbar } from './Toolbar';

@@ -40,6 +40,7 @@ src/
 │   ├── AccessibilitySettings.tsx   # WCAG compliance and color scheme settings
 │   ├── AnimationSettings.tsx    # Animation configuration controls
 │   ├── EnhancedDepthDemo.tsx    # Comprehensive depth visualization demo
+│   ├── IntegratedStackVisualizer.tsx # Side-by-side flowchart and stack panel
 │   └── Toolbar.tsx              # File operations toolbar
 ├── types/           # TypeScript type definitions
 ├── utils/           # Utility functions
@@ -68,6 +69,7 @@ src/
 - **BlockShape**: 12 distinct block shapes with professional styling
 - **Connection**: Orthogonal arrows with depth-based color coding for nested loops
 - **useAlgorithmVisualizer**: Comprehensive state management with function extraction
+- **IntegratedStackVisualizer**: Side-by-side flowchart and stack visualization with synchronization
 
 ### Advanced Features
 
@@ -121,6 +123,16 @@ src/
 - **Configurable Speeds**: User-controllable animation speeds with easing functions
 - **Accessibility Integration**: Reduced motion support and high contrast compatibility
 
+#### Integrated Stack Visualization (NEW)
+- **Side-by-Side Layout**: Stack panel positioned alongside flowchart with responsive design
+- **Position Toggle**: Switch stack panel between left and right sides
+- **Collapsible Panel**: Minimize to icon for more flowchart space
+- **Function Synchronization**: Click function blocks to see simulated stack frames
+- **Smart Frame Generation**: Creates realistic stack frames based on function metadata
+- **Recursive Detection**: Automatically generates deep stacks for recursive functions
+- **Z-Index Management**: Proper layering ensures popups appear above stack panel
+- **One-Click Demo**: Stack Demo button loads recursive examples with visualization
+
 #### Optimized Layout System
 - Smart END block placement below lowest content block
 - 25% longer arrow spacing than block height for readability
@@ -143,6 +155,7 @@ src/
 12. **Interactive Canvas**: Pan, zoom, and auto-fit functionality
 13. **Function Definitions**: Separate popup display with movable windows
 14. **Accessibility Features**: High contrast mode, reduced motion, real-time contrast validation
+15. **Integrated Stack Visualization**: Side-by-side stack panel with function synchronization
 
 ### Block Types and Shapes
 - **Start/End**: Rounded rectangles (green/red)

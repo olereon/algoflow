@@ -1,5 +1,5 @@
 import React from 'react';
-import { Code2, X, Play } from 'lucide-react';
+import { Code2, X, Play, Layers } from 'lucide-react';
 import { useAlgorithmVisualizer } from './hooks/useAlgorithmVisualizer';
 import { Editor } from './components/Editor';
 import { InfiniteCanvas } from './components/InfiniteCanvas';
@@ -7,6 +7,8 @@ import { Toolbar } from './components/Toolbar';
 import { BlockTypeSelector } from './components/BlockTypeSelector';
 import { FunctionPopup } from './components/FunctionPopup';
 import { EnhancedDepthDemo } from './components/EnhancedDepthDemo';
+import { IntegratedStackVisualizer } from './components/IntegratedStackVisualizer';
+import { RECURSIVE_DEMO_PROJECT } from './constants';
 
 export default function App() {
   const {
@@ -26,6 +28,7 @@ export default function App() {
     selectedBlock,
     validation,
     blocks,
+    functions,
     selectedFunction,
     showFunctionPopup,
     setShowFunctionPopup,
@@ -40,6 +43,12 @@ export default function App() {
   } = useAlgorithmVisualizer();
 
   const [showDemo, setShowDemo] = React.useState(false);
+  const [showIntegratedStack, setShowIntegratedStack] = React.useState(false);
+
+  const loadRecursiveDemo = () => {
+    setPseudocode(RECURSIVE_DEMO_PROJECT.pseudocode);
+    setShowIntegratedStack(true);
+  };
 
   if (showDemo) {
     return (
@@ -73,6 +82,13 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <button
+              onClick={loadRecursiveDemo}
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded transition-colors"
+            >
+              <Layers size={16} />
+              Stack Demo
+            </button>
             <button
               onClick={() => setShowDemo(true)}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded transition-colors"
@@ -128,16 +144,34 @@ export default function App() {
           </div>
 
           <div className="bg-white rounded-lg flex flex-col min-h-0">
-            <div className="p-4 border-b">
+            <div className="p-4 border-b flex items-center justify-between">
               <h3 className="text-lg font-semibold">Flowchart Output</h3>
+              <button
+                onClick={() => setShowIntegratedStack(!showIntegratedStack)}
+                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                {showIntegratedStack ? 'Standard View' : 'Stack View'}
+              </button>
             </div>
             <div className="flex-1 min-h-0">
-              <InfiniteCanvas
-                ref={canvasRef}
-                blocks={blocks}
-                onBlockClick={handleBlockClick}
-                selectedBlock={selectedBlock}
-              />
+              {showIntegratedStack ? (
+                <IntegratedStackVisualizer
+                  blocks={blocks}
+                  functions={functions}
+                  selectedBlock={selectedBlock}
+                  onBlockClick={handleBlockClick}
+                  showStackPanel={true}
+                  stackPanelPosition="right"
+                  className="h-full"
+                />
+              ) : (
+                <InfiniteCanvas
+                  ref={canvasRef}
+                  blocks={blocks}
+                  onBlockClick={handleBlockClick}
+                  selectedBlock={selectedBlock}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -190,7 +224,7 @@ export default function App() {
         />
       )}
 
-      {showFunctionPopup && selectedFunction && (
+      {showFunctionPopup && selectedFunction && !showIntegratedStack && (
         <FunctionPopup
           functionDef={selectedFunction}
           onClose={() => setShowFunctionPopup(false)}

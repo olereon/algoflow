@@ -153,6 +153,16 @@ suggestBlockType(text) {
 - **Accessibility Integration**: Full reduced motion support and high contrast compatibility
 - **Configurable Controls**: User-controllable animation speeds (slow/normal/fast/instant) with custom easing functions
 
+#### 📐 Integrated Stack Visualization (NEW)
+- **Side-by-Side Layout**: Stack panel positioned alongside flowchart for synchronized viewing
+- **Responsive Design**: Auto-collapse on small screens with collapsible panels
+- **Position Toggle**: Switch stack panel between left and right sides
+- **Function Synchronization**: Click function blocks to instantly see simulated stack frames
+- **Smart Frame Generation**: Realistic stack frame creation based on function definitions
+- **Recursive Detection**: Automatically generates deep stacks for recursive functions
+- **Z-Index Management**: Proper layering ensures popups appear above stack panel
+- **One-Click Demo**: "Stack Demo" button loads recursive examples instantly
+
 #### 💾 Project Management
 - **Save/Load Projects**: Persistent storage with project naming
 - **Export Options**: Download as PNG images or text descriptions
@@ -243,6 +253,16 @@ suggestBlockType(text) {
 - [x] User-controllable animation settings (speed, easing, motion)
 - [x] Accessibility integration with reduced motion compliance
 - [x] Interactive animation demo with factorial recursion example
+
+**Integrated Stack Visualization (100% Complete - NEW)**
+- [x] Side-by-side layout with flowchart and stack panels
+- [x] Responsive design with auto-collapse for small screens
+- [x] Toggle stack panel position between left and right
+- [x] Function block click synchronization with stack frames
+- [x] Smart stack frame generation based on function metadata
+- [x] Recursive function detection with deep stack simulation
+- [x] Proper z-index layering for popups and panels
+- [x] One-click demo button for recursive examples
 
 **Advanced Visualization (100% Complete)**
 - [x] Enhanced YES/NO branching with optimized label positioning
