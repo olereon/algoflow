@@ -21,9 +21,16 @@ export function validatePseudocode(parsedLines: ParsedLine[]): ValidationResult 
   let openLoops = 0;
   
   parsedLines.forEach((line, index) => {
+    // Opening conditions
     if (line.blockType === 'condition' && !line.isClosing) {
       openConditions++;
-    } else if (line.blockType === 'condition' && line.isClosing) {
+    } 
+    // Closing conditions (condition blocks marked as closing)
+    else if (line.blockType === 'condition' && line.isClosing) {
+      openConditions--;
+    }
+    // Handle "End if", "End else", etc. statements that close conditions
+    else if (line.isClosing && /^end\s+(if|else|condition)/i.test(line.content)) {
       openConditions--;
     }
     

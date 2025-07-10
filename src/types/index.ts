@@ -198,3 +198,6 @@ export interface UseStackAnimationOptions {
   onAnimationEnd?: (animation: FrameAnimation) => void;
   onQueueEmpty?: () => void;
 }
+
+// Re-export animation types
+export * from './animation';

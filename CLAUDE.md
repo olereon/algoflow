@@ -41,6 +41,8 @@ src/
 │   ├── AnimationSettings.tsx    # Animation configuration controls
 │   ├── EnhancedDepthDemo.tsx    # Comprehensive depth visualization demo
 │   ├── IntegratedStackVisualizer.tsx # Side-by-side flowchart and stack panel
+│   ├── AnimationShowcase.tsx    # Comprehensive animation system demonstration
+│   ├── AnimationDebugger.tsx    # Interactive animation performance debugger
 │   └── Toolbar.tsx              # File operations toolbar
 ├── types/           # TypeScript type definitions
 ├── utils/           # Utility functions
@@ -50,11 +52,14 @@ src/
 │   ├── storage.ts               # localStorage project management
 │   ├── validation.ts            # Algorithm structure validation
 │   ├── animation.ts             # Animation system utilities and configuration
+│   ├── AnimationController.ts   # Centralized animation controller with requestAnimationFrame
 │   └── depthVisualization.ts    # Depth gradient system and accessibility compliance
 ├── constants/       # Constants and configuration
 ├── hooks/           # Custom React hooks
 │   ├── useAlgorithmVisualizer.ts # Main state management hook
 │   ├── useStackAnimations.ts     # Stack frame animation management
+│   ├── useStackAnimationsV2.ts   # Updated stack animations using centralized controller
+│   ├── useAnimation.ts           # Centralized animation hooks (basic, tween, spring, keyframes)
 │   ├── useAnimationQueue.ts      # Animation queuing and performance optimization
 │   └── useAnimationPerformance.ts # Performance monitoring and adaptive optimization
 ├── App.tsx          # Main application component
@@ -133,6 +138,16 @@ src/
 - **Z-Index Management**: Proper layering ensures popups appear above stack panel
 - **One-Click Demo**: Stack Demo button loads recursive examples with visualization
 
+#### Centralized Animation Controller (NEW)
+- **RequestAnimationFrame Loop**: Efficient 60fps animation loop with frame rate limiting
+- **Animation Queue System**: Priority-based queue management with concurrent animation limits
+- **Comprehensive Easing Library**: 25+ easing functions including elastic, bounce, and spring effects
+- **Global Playback Controls**: Play/pause/stop states with variable speed control (0.1x to 4x)
+- **React Integration Hooks**: Component-level hooks for basic animations, tweens, springs, and keyframes
+- **Performance Monitoring**: Real-time FPS tracking, memory usage, and animation metrics
+- **Interactive Debugger**: Live animation controls and performance visualization
+- **Spring Physics System**: Realistic spring animations with configurable tension, friction, and mass
+
 #### Optimized Layout System
 - Smart END block placement below lowest content block
 - 25% longer arrow spacing than block height for readability
@@ -156,6 +171,7 @@ src/
 13. **Function Definitions**: Separate popup display with movable windows
 14. **Accessibility Features**: High contrast mode, reduced motion, real-time contrast validation
 15. **Integrated Stack Visualization**: Side-by-side stack panel with function synchronization
+16. **Centralized Animation Controller**: Global animation management with React hooks and debugging tools
 
 ### Block Types and Shapes
 - **Start/End**: Rounded rectangles (green/red)
