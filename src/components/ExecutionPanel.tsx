@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Clock, Play, Pause, SkipForward, RotateCcw, Settings, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Clock, Play, Pause, SkipForward, RotateCcw, Settings, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { ExecutionLogEntry, ExecutionState } from '../utils/executionEngine';
 
 interface ExecutionPanelProps {
@@ -28,13 +28,18 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
   className = ''
 }) => {
   const logContainerRef = useRef<HTMLDivElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  // Auto-scroll to latest log entry
+  // Auto-expand when execution starts and auto-scroll to latest log entry
   useEffect(() => {
+    if (executionLog.length > 0 && !executionState.isPaused) {
+      setIsExpanded(true);
+    }
+    
     if (logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
-  }, [executionLog]);
+  }, [executionLog, executionState.isPaused]);
 
   const formatTimestamp = (timestamp: number) => {
     const diff = timestamp - executionState.startTime;
@@ -72,15 +77,22 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
   }
 
   return (
-    <div className={`bg-white border-t border-gray-200 flex flex-col ${className}`}>
+    <div className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-30 transition-all duration-300 ${isExpanded ? 'h-80' : 'h-16'} ${className}`}>
       {/* Header with controls */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-gray-600" />
-          <h3 className="font-semibold text-sm">Execution Log</h3>
-          <span className="text-xs text-gray-500">
-            ({executionLog.length} entries)
-          </span>
+      <div className="flex items-center justify-between p-3 bg-gray-50 border-b border-gray-200 h-16">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-2 px-2 py-1 hover:bg-gray-200 rounded transition-colors"
+            title={isExpanded ? "Collapse panel" : "Expand panel"}
+          >
+            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+            <Clock className="w-4 h-4 text-gray-600" />
+            <h3 className="font-semibold text-sm">Execution Log</h3>
+            <span className="text-xs text-gray-500">
+              ({executionLog.length} entries)
+            </span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -164,62 +176,66 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
         </div>
       </div>
 
-      {/* Log Display */}
-      <div 
-        ref={logContainerRef}
-        className="flex-1 overflow-y-auto p-2 max-h-32 min-h-24"
-      >
-        {executionLog.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <p className="text-sm">Press Play to start execution</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {executionLog.map((entry, index) => (
-              <div 
-                key={index}
-                className={`flex items-start gap-2 text-xs p-1 rounded ${
-                  index === executionLog.length - 1 ? 'bg-blue-50 border border-blue-200' : ''
-                }`}
-              >
-                <span className="text-gray-400 font-mono text-xs min-w-12">
-                  [{formatTimestamp(entry.timestamp)}]
-                </span>
-                <span className={`min-w-4 ${getActionColor(entry.action)}`}>
-                  {getActionIcon(entry.action)}
-                </span>
-                <span className="text-gray-600 min-w-8">
-                  Block {entry.blockIndex}:
-                </span>
-                <span className="text-gray-800 font-medium">
-                  "{entry.blockContent}"
-                </span>
-                {entry.details && (
-                  <span className="text-gray-500 italic">
-                    - {entry.details}
-                  </span>
-                )}
+      {/* Log Display - Only visible when expanded */}
+      {isExpanded && (
+        <>
+          <div 
+            ref={logContainerRef}
+            className="flex-1 overflow-y-auto p-2"
+          >
+            {executionLog.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <p className="text-sm">Press Play to start execution</p>
               </div>
-            ))}
+            ) : (
+              <div className="space-y-1">
+                {executionLog.map((entry, index) => (
+                  <div 
+                    key={index}
+                    className={`flex items-start gap-2 text-xs p-1 rounded ${
+                      index === executionLog.length - 1 ? 'bg-blue-50 border border-blue-200' : ''
+                    }`}
+                  >
+                    <span className="text-gray-400 font-mono text-xs min-w-12">
+                      [{formatTimestamp(entry.timestamp)}]
+                    </span>
+                    <span className={`min-w-4 ${getActionColor(entry.action)}`}>
+                      {getActionIcon(entry.action)}
+                    </span>
+                    <span className="text-gray-600 min-w-8">
+                      Block {entry.blockIndex}:
+                    </span>
+                    <span className="text-gray-800 font-medium">
+                      "{entry.blockContent}"
+                    </span>
+                    {entry.details && (
+                      <span className="text-gray-500 italic">
+                        - {entry.details}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Current State Summary */}
-      {executionState.currentBlockIndex !== null && (
-        <div className="border-t border-gray-200 p-2 bg-blue-50">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-blue-700 font-medium">
-              Current: Block {executionState.currentBlockIndex}
-            </span>
-            <span className="text-blue-600">
-              Visited: {executionState.visitedBlocks.size} blocks
-            </span>
-            <span className="text-blue-600">
-              Call Stack: {executionState.callStack.length}
-            </span>
-          </div>
-        </div>
+          
+          {/* Current State Summary - Only when expanded */}
+          {executionState.currentBlockIndex !== null && (
+            <div className="border-t border-gray-200 p-2 bg-blue-50">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-blue-700 font-medium">
+                  Current: Block {executionState.currentBlockIndex}
+                </span>
+                <span className="text-blue-600">
+                  Visited: {executionState.visitedBlocks.size} blocks
+                </span>
+                <span className="text-blue-600">
+                  Call Stack: {executionState.callStack.length}
+                </span>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

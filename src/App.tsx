@@ -64,7 +64,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gray-100 flex flex-col" style={{
+      paddingBottom: showExecutionPanel ? '64px' : '0'
+    }}>
       <header className="bg-gray-800 text-white p-4">
         <div className="flex items-center justify-between px-4">
           <div className="flex items-center gap-3">
@@ -121,37 +123,21 @@ export default function App() {
         />
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
-          <div className="flex flex-col min-h-0">
-            <div className="flex-1" onClick={(e) => {
-              const target = e.target as HTMLElement;
-              if (target.tagName === 'TEXTAREA') {
-                const textarea = target as HTMLTextAreaElement;
-                const cursorPosition = textarea.selectionStart;
-                const lines = pseudocode.substring(0, cursorPosition).split('\n');
-                const lineIndex = lines.length - 1;
-                handleLineClick(lineIndex, e as any, cursorPosition);
-              }
-            }}>
-              <Editor
-                value={pseudocode}
-                onChange={setPseudocode}
-                validation={validation}
-                selectedLine={selectedLineIndex ?? undefined}
-              />
-            </div>
-            
-            {/* Execution Panel */}
-            <ExecutionPanel
-              executionLog={executionLog}
-              executionState={executionState || { isComplete: false, isPaused: true, speed: 500, startTime: Date.now() }}
-              onPlay={executionState?.isPaused ? handleExecutionResume : handleExecutionStart}
-              onPause={handleExecutionPause}
-              onStep={handleExecutionStep}
-              onReset={handleExecutionReset}
-              onSpeedChange={handleExecutionSpeedChange}
-              onClose={() => setShowExecutionPanel(false)}
-              isVisible={showExecutionPanel}
-              className="h-40"
+          <div className="flex flex-col min-h-0" onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'TEXTAREA') {
+              const textarea = target as HTMLTextAreaElement;
+              const cursorPosition = textarea.selectionStart;
+              const lines = pseudocode.substring(0, cursorPosition).split('\n');
+              const lineIndex = lines.length - 1;
+              handleLineClick(lineIndex, e as any, cursorPosition);
+            }
+          }}>
+            <Editor
+              value={pseudocode}
+              onChange={setPseudocode}
+              validation={validation}
+              selectedLine={selectedLineIndex ?? undefined}
             />
           </div>
 
@@ -190,6 +176,20 @@ export default function App() {
           </div>
         </div>
       </main>
+
+      {/* Bottom Execution Panel */}
+      <ExecutionPanel
+        executionLog={executionLog}
+        executionState={executionState || { isComplete: false, isPaused: true, speed: 500, startTime: Date.now() }}
+        onPlay={executionState?.isPaused ? handleExecutionResume : handleExecutionStart}
+        onPause={handleExecutionPause}
+        onStep={handleExecutionStep}
+        onReset={handleExecutionReset}
+        onSpeedChange={handleExecutionSpeedChange}
+        onClose={() => setShowExecutionPanel(false)}
+        isVisible={showExecutionPanel}
+        className=""
+      />
 
       {showProjectList && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
