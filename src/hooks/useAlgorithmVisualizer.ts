@@ -1,6 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Project, FunctionDefinition, RecursionMetadata } from '../types';
 import { InfiniteCanvasRef } from '../components/InfiniteCanvas';
+import { ExecutionState } from '../components/DiagramBlock';
+import { ExecutionEngine, ExecutionLogEntry } from '../utils/executionEngine';
 import { DEFAULT_PROJECT } from '../constants';
 import { parsePseudocode, extractFunctions } from '../utils/parser';
 import { validatePseudocode, validateFunctions } from '../utils/validation';
@@ -20,6 +22,14 @@ export function useAlgorithmVisualizer() {
   const [selectedBlock, setSelectedBlock] = useState<number | undefined>();
   const [selectedFunction, setSelectedFunction] = useState<FunctionDefinition | null>(null);
   const [showFunctionPopup, setShowFunctionPopup] = useState(false);
+  
+  // Execution state
+  const [showExecutionPanel, setShowExecutionPanel] = useState(false);
+  const [executionEngine, setExecutionEngine] = useState<ExecutionEngine | null>(null);
+  const [executionState, setExecutionState] = useState<any>(null);
+  const [executionLog, setExecutionLog] = useState<ExecutionLogEntry[]>([]);
+  const [blockExecutionStates, setBlockExecutionStates] = useState<Map<number, ExecutionState>>(new Map());
+  const [activeConnections, setActiveConnections] = useState<Set<string>>(new Set());
   
   const canvasRef = useRef<InfiniteCanvasRef>(null);
   
@@ -55,6 +65,41 @@ export function useAlgorithmVisualizer() {
     ...func,
     blocks: layoutBlocks(func.blocks)
   }));
+  
+  // Initialize execution engine when blocks change
+  useEffect(() => {
+    if (blocks.length > 0 && validation.isValid) {
+      const engine = new ExecutionEngine(blocks);
+      
+      engine.setOnStateChange((state) => {
+        setExecutionState(state);
+        
+        // Update block execution states
+        const newBlockStates = new Map<number, ExecutionState>();
+        state.visitedBlocks.forEach(blockIndex => {
+          newBlockStates.set(blockIndex, 'visited');
+        });
+        if (state.currentBlockIndex !== null) {
+          newBlockStates.set(state.currentBlockIndex, 'active');
+        }
+        setBlockExecutionStates(newBlockStates);
+        
+        // Update active connections
+        const newActiveConnections = new Set<string>();
+        if (state.currentBlockIndex !== null && state.executionPath.length > 1) {
+          const lastIndex = state.executionPath[state.executionPath.length - 2];
+          newActiveConnections.add(`${lastIndex}-${state.currentBlockIndex}`);
+        }
+        setActiveConnections(newActiveConnections);
+      });
+      
+      engine.setOnLogEntry((entry) => {
+        setExecutionLog(prev => [...prev, entry]);
+      });
+      
+      setExecutionEngine(engine);
+    }
+  }, [blocks, validation.isValid]);
   
   // Log function parsing and block structure for debugging
   React.useEffect(() => {
@@ -189,6 +234,48 @@ export function useAlgorithmVisualizer() {
     }
   }, [currentProject, handleNew]);
   
+  // Execution control functions
+  const handleExecutionStart = useCallback(() => {
+    if (executionEngine && validation.isValid) {
+      executionEngine.start();
+      setShowExecutionPanel(true);
+    }
+  }, [executionEngine, validation.isValid]);
+  
+  const handleExecutionPause = useCallback(() => {
+    if (executionEngine) {
+      executionEngine.pause();
+    }
+  }, [executionEngine]);
+  
+  const handleExecutionResume = useCallback(() => {
+    if (executionEngine) {
+      executionEngine.resume();
+    }
+  }, [executionEngine]);
+  
+  const handleExecutionStep = useCallback(() => {
+    if (executionEngine) {
+      executionEngine.step();
+      setShowExecutionPanel(true);
+    }
+  }, [executionEngine]);
+  
+  const handleExecutionReset = useCallback(() => {
+    if (executionEngine) {
+      executionEngine.reset();
+      setExecutionLog([]);
+      setBlockExecutionStates(new Map());
+      setActiveConnections(new Set());
+    }
+  }, [executionEngine]);
+  
+  const handleExecutionSpeedChange = useCallback((speed: number) => {
+    if (executionEngine) {
+      executionEngine.setSpeed(speed);
+    }
+  }, [executionEngine]);
+  
   return {
     pseudocode,
     setPseudocode,
@@ -218,6 +305,20 @@ export function useAlgorithmVisualizer() {
     handleSave,
     handleLoadProject,
     handleNew,
-    handleDelete
+    handleDelete,
+    
+    // Execution system
+    showExecutionPanel,
+    setShowExecutionPanel,
+    executionState,
+    executionLog,
+    blockExecutionStates,
+    activeConnections,
+    handleExecutionStart,
+    handleExecutionPause,
+    handleExecutionResume,
+    handleExecutionStep,
+    handleExecutionReset,
+    handleExecutionSpeedChange
   };
 }

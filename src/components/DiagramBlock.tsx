@@ -3,13 +3,16 @@ import { DiagramBlock as DiagramBlockType } from '../types';
 import { BlockShape } from './BlockShape';
 import { BLOCK_DIMENSIONS } from '../constants';
 
+export type ExecutionState = 'idle' | 'active' | 'visited';
+
 interface DiagramBlockProps {
   block: DiagramBlockType;
   onClick?: (index: number) => void;
   isSelected?: boolean;
+  executionState?: ExecutionState;
 }
 
-export const DiagramBlock: React.FC<DiagramBlockProps> = ({ block, onClick, isSelected }) => {
+export const DiagramBlock: React.FC<DiagramBlockProps> = ({ block, onClick, isSelected, executionState = 'idle' }) => {
   const { position, blockType, content, index } = block;
   const { fontSize, lineHeight } = BLOCK_DIMENSIONS;
   
@@ -50,6 +53,42 @@ export const DiagramBlock: React.FC<DiagramBlockProps> = ({ block, onClick, isSe
         width={position.width}
         height={position.height}
       />
+      
+      {/* Execution state overlay */}
+      {executionState === 'active' && (
+        <>
+          <rect
+            x={position.x - 3}
+            y={position.y - 3}
+            width={position.width + 6}
+            height={position.height + 6}
+            fill="none"
+            stroke="#3b82f6"
+            strokeWidth="3"
+            rx="4"
+          />
+          <rect
+            x={position.x - 1}
+            y={position.y - 1}
+            width={position.width + 2}
+            height={position.height + 2}
+            fill="rgba(59, 130, 246, 0.1)"
+            rx="2"
+          />
+        </>
+      )}
+      
+      {executionState === 'visited' && (
+        <rect
+          x={position.x}
+          y={position.y}
+          width={position.width}
+          height={position.height}
+          fill="rgba(34, 197, 94, 0.1)"
+          stroke="rgba(34, 197, 94, 0.3)"
+          strokeWidth="1"
+        />
+      )}
       
       {isSelected && (
         <rect

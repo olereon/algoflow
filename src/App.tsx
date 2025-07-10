@@ -1,13 +1,13 @@
 import React from 'react';
-import { Code2, X, Play, Layers } from 'lucide-react';
+import { Code2, X, Layers, Play } from 'lucide-react';
 import { useAlgorithmVisualizer } from './hooks/useAlgorithmVisualizer';
 import { Editor } from './components/Editor';
 import { InfiniteCanvas } from './components/InfiniteCanvas';
 import { Toolbar } from './components/Toolbar';
 import { BlockTypeSelector } from './components/BlockTypeSelector';
 import { FunctionPopup } from './components/FunctionPopup';
-import { EnhancedDepthDemo } from './components/EnhancedDepthDemo';
 import { IntegratedStackVisualizer } from './components/IntegratedStackVisualizer';
+import { ExecutionPanel } from './components/ExecutionPanel';
 import { RECURSIVE_DEMO_PROJECT } from './constants';
 
 export default function App() {
@@ -39,34 +39,29 @@ export default function App() {
     handleSave,
     handleLoadProject,
     handleNew,
-    handleDelete
+    handleDelete,
+    
+    // Execution system
+    showExecutionPanel,
+    setShowExecutionPanel,
+    executionState,
+    executionLog,
+    blockExecutionStates,
+    activeConnections,
+    handleExecutionStart,
+    handleExecutionPause,
+    handleExecutionResume,
+    handleExecutionStep,
+    handleExecutionReset,
+    handleExecutionSpeedChange
   } = useAlgorithmVisualizer();
 
-  const [showDemo, setShowDemo] = React.useState(false);
   const [showIntegratedStack, setShowIntegratedStack] = React.useState(false);
 
   const loadRecursiveDemo = () => {
     setPseudocode(RECURSIVE_DEMO_PROJECT.pseudocode);
     setShowIntegratedStack(true);
   };
-
-  if (showDemo) {
-    return (
-      <div className="min-h-screen">
-        <div className="fixed top-4 right-4 z-50">
-          <button
-            onClick={() => setShowDemo(false)}
-            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            ← Back to App
-          </button>
-        </div>
-        <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading demo...</div>}>
-          <EnhancedDepthDemo />
-        </React.Suspense>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -90,11 +85,12 @@ export default function App() {
               Stack Demo
             </button>
             <button
-              onClick={() => setShowDemo(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded transition-colors"
+              onClick={handleExecutionStart}
+              disabled={!validation.isValid}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed px-3 py-2 rounded transition-colors"
             >
               <Play size={16} />
-              Animation Demo
+              Execute
             </button>
             {currentProject && (
               <div className="text-right">
@@ -125,21 +121,37 @@ export default function App() {
         />
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
-          <div className="flex flex-col min-h-0" onClick={(e) => {
-            const target = e.target as HTMLElement;
-            if (target.tagName === 'TEXTAREA') {
-              const textarea = target as HTMLTextAreaElement;
-              const cursorPosition = textarea.selectionStart;
-              const lines = pseudocode.substring(0, cursorPosition).split('\n');
-              const lineIndex = lines.length - 1;
-              handleLineClick(lineIndex, e as any, cursorPosition);
-            }
-          }}>
-            <Editor
-              value={pseudocode}
-              onChange={setPseudocode}
-              validation={validation}
-              selectedLine={selectedLineIndex ?? undefined}
+          <div className="flex flex-col min-h-0">
+            <div className="flex-1" onClick={(e) => {
+              const target = e.target as HTMLElement;
+              if (target.tagName === 'TEXTAREA') {
+                const textarea = target as HTMLTextAreaElement;
+                const cursorPosition = textarea.selectionStart;
+                const lines = pseudocode.substring(0, cursorPosition).split('\n');
+                const lineIndex = lines.length - 1;
+                handleLineClick(lineIndex, e as any, cursorPosition);
+              }
+            }}>
+              <Editor
+                value={pseudocode}
+                onChange={setPseudocode}
+                validation={validation}
+                selectedLine={selectedLineIndex ?? undefined}
+              />
+            </div>
+            
+            {/* Execution Panel */}
+            <ExecutionPanel
+              executionLog={executionLog}
+              executionState={executionState || { isComplete: false, isPaused: true, speed: 500, startTime: Date.now() }}
+              onPlay={executionState?.isPaused ? handleExecutionResume : handleExecutionStart}
+              onPause={handleExecutionPause}
+              onStep={handleExecutionStep}
+              onReset={handleExecutionReset}
+              onSpeedChange={handleExecutionSpeedChange}
+              onClose={() => setShowExecutionPanel(false)}
+              isVisible={showExecutionPanel}
+              className="h-40"
             />
           </div>
 
@@ -170,6 +182,8 @@ export default function App() {
                   blocks={blocks}
                   onBlockClick={handleBlockClick}
                   selectedBlock={selectedBlock}
+                  blockExecutionStates={blockExecutionStates}
+                  activeConnections={activeConnections}
                 />
               )}
             </div>

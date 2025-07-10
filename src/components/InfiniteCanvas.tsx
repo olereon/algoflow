@@ -1,12 +1,14 @@
 import { useState, useRef, useCallback, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { DiagramBlock } from '../types';
-import { DiagramBlock as DiagramBlockComponent } from './DiagramBlock';
+import { DiagramBlock as DiagramBlockComponent, ExecutionState } from './DiagramBlock';
 import { Connection } from './Connection';
 
 interface InfiniteCanvasProps {
   blocks: DiagramBlock[];
   onBlockClick?: (index: number) => void;
   selectedBlock?: number;
+  blockExecutionStates?: Map<number, ExecutionState>;
+  activeConnections?: Set<string>;
 }
 
 export interface InfiniteCanvasRef {
@@ -14,7 +16,7 @@ export interface InfiniteCanvasRef {
 }
 
 export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>(
-  ({ blocks, onBlockClick, selectedBlock }, ref) => {
+  ({ blocks, onBlockClick, selectedBlock, blockExecutionStates, activeConnections }, ref) => {
     const [viewBox, setViewBox] = useState({ x: -400, y: -200, width: 1200, height: 800 });
     const [isPanning, setIsPanning] = useState(false);
     const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
@@ -232,13 +234,17 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
 
           {/* Render connections first (behind blocks) */}
           {blocks.flatMap(block =>
-            block.connections.map((connection, idx) => (
-              <Connection
-                key={`${block.index}-${idx}`}
-                connection={connection}
-                blocks={blocks}
-              />
-            ))
+            block.connections.map((connection, idx) => {
+              const connectionKey = `${connection.from}-${connection.to}`;
+              return (
+                <Connection
+                  key={`${block.index}-${idx}`}
+                  connection={connection}
+                  blocks={blocks}
+                  isActive={activeConnections?.has(connectionKey)}
+                />
+              );
+            })
           )}
           
           {/* Render blocks */}
@@ -248,6 +254,7 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
               block={block}
               onClick={onBlockClick}
               isSelected={selectedBlock === block.index}
+              executionState={blockExecutionStates?.get(block.index) || 'idle'}
             />
           ))}
         </svg>
