@@ -20,10 +20,7 @@ export function PathTrackingDemo({
     controls,
     stats,
     executeStep,
-    getBlockState,
-    getBranchDecision,
-    getLoopIteration,
-    isInCallStack
+    getBlockState
   } = useSimpleExecution(blocks, functions);
 
   const [autoExecute, setAutoExecute] = useState(false);
@@ -42,7 +39,7 @@ export function PathTrackingDemo({
   // Notify parent of block state changes
   useEffect(() => {
     if (onBlockStateChange) {
-      blocks.forEach((block, index) => {
+      blocks.forEach((_, index) => {
         const blockState = getBlockState(index);
         onBlockStateChange(index, blockState);
       });

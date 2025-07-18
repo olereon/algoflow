@@ -33,7 +33,7 @@ interface ExecutionControls {
 
 export function useSimpleExecution(
   blocks: DiagramBlock[],
-  functions: FunctionDefinition[] = []
+  _functions: FunctionDefinition[] = []
 ) {
   const [state, setState] = useState<ExecutionState>({
     currentStep: 0,
