@@ -1,8 +1,8 @@
-# Algorithm Visualizer
+# AlgoFlow
 
-A powerful, intuitive tool for converting natural language pseudocode into professional flowcharts with advanced conditional logic support. Bridge the gap between algorithm design and visual documentation with intelligent block detection, multi-way conditional structures, and real-time visualization.
+A powerful, intuitive tool for converting natural language pseudocode into professional flowcharts with advanced conditional logic support, recursive function visualization, and interactive execution tracking. Bridge the gap between algorithm design and visual documentation with intelligent block detection, multi-way conditional structures, and real-time visualization.
 
-![Algorithm Visualizer Demo](https://via.placeholder.com/800x400/4CAF50/FFFFFF?text=Algorithm+Visualizer+Demo)
+![AlgoFlow Demo](https://via.placeholder.com/800x400/4CAF50/FFFFFF?text=AlgoFlow+Demo)
 
 ## 🎯 Project Goals
 
@@ -145,13 +145,13 @@ suggestBlockType(text) {
 - **Customizable Settings**: Real-time color scheme switching, high contrast mode, reduced motion support
 - **Performance Monitoring**: Adaptive optimization for large stacks with accessibility warnings and recommendations
 
-#### ⚡ Comprehensive Animation System (NEW)
-- **Smooth Frame Animations**: Entry/exit transitions with configurable easing and speed controls
-- **Staggered Batch Operations**: Performance-optimized animations for multiple frames with intelligent delays
-- **Animation Queuing System**: Advanced queue management preventing system overload during rapid operations
-- **Adaptive Performance**: Real-time FPS monitoring with automatic optimization based on device capabilities
-- **Accessibility Integration**: Full reduced motion support and high contrast compatibility
-- **Configurable Controls**: User-controllable animation speeds (slow/normal/fast/instant) with custom easing functions
+#### ⚡ Interactive Execution System (NEW)
+- **Step-by-Step Execution**: Visual execution tracking with block highlighting and flow visualization
+- **Execution Logging**: Detailed log of execution steps with timestamps and block information
+- **Collapsible Bottom Panel**: Expandable execution log panel with smooth transitions
+- **Play/Pause/Step Controls**: Interactive execution controls with speed adjustment
+- **Block State Tracking**: Visual indication of visited, active, and pending blocks
+- **Call Stack Visualization**: Real-time display of function call stack depth and state
 
 #### 📐 Integrated Stack Visualization (NEW)
 - **Side-by-Side Layout**: Stack panel positioned alongside flowchart for synchronized viewing
@@ -163,15 +163,13 @@ suggestBlockType(text) {
 - **Z-Index Management**: Proper layering ensures popups appear above stack panel
 - **One-Click Demo**: "Stack Demo" button loads recursive examples instantly
 
-#### 🎮 Centralized Animation Controller (NEW)
-- **RequestAnimationFrame Loop**: Efficient 60fps animation loop with frame rate limiting
-- **Animation Queue System**: Priority-based queue management with concurrent animation limits
-- **Comprehensive Easing Library**: 25+ easing functions including elastic, bounce, and spring effects
-- **Playback Controls**: Global play/pause/stop states with variable speed control (0.1x to 4x)
-- **React Integration Hooks**: Component-level hooks for basic animations, tweens, springs, and keyframes
-- **Performance Monitoring**: Real-time FPS tracking, memory usage, and animation metrics
-- **Debug Tools**: Interactive animation debugger with live controls and performance visualization
-- **Spring Physics**: Realistic spring animations with configurable tension, friction, and mass
+#### 🎮 Function Validation System (NEW)
+- **Separate Function Validation**: Functions validated independently without START/END requirements
+- **Recursive Function Analysis**: Comprehensive analysis of recursive patterns and base cases
+- **Structure Validation**: Proper validation of conditional blocks, loops, and function calls
+- **Real-time Error Feedback**: Immediate validation feedback with detailed error descriptions
+- **Function Definition Parsing**: Automatic extraction and validation of function definitions
+- **Stack Overflow Detection**: Warnings for potentially infinite recursion patterns
 
 #### 💾 Project Management
 - **Save/Load Projects**: Persistent storage with project naming
@@ -255,14 +253,14 @@ suggestBlockType(text) {
 - [x] High contrast mode and reduced motion support
 - [x] Live accessibility settings with instant preview
 
-**Comprehensive Animation System (100% Complete - NEW)**
-- [x] Smooth frame entry/exit animations with configurable speeds
-- [x] Staggered batch operations for multiple frame changes
-- [x] Advanced animation queuing with performance optimization
-- [x] Real-time FPS monitoring and adaptive performance
-- [x] User-controllable animation settings (speed, easing, motion)
-- [x] Accessibility integration with reduced motion compliance
-- [x] Interactive animation demo with factorial recursion example
+**Interactive Execution System (100% Complete - NEW)**
+- [x] Step-by-step execution tracking with visual block highlighting
+- [x] Execution logging with timestamps and detailed block information
+- [x] Collapsible bottom panel with smooth expand/collapse transitions
+- [x] Play/pause/step controls with configurable execution speed
+- [x] Block state visualization (visited, active, pending)
+- [x] Call stack depth tracking and visualization
+- [x] Auto-expand execution panel when execution starts
 
 **Integrated Stack Visualization (100% Complete - NEW)**
 - [x] Side-by-side layout with flowchart and stack panels
@@ -274,15 +272,13 @@ suggestBlockType(text) {
 - [x] Proper z-index layering for popups and panels
 - [x] One-click demo button for recursive examples
 
-**Centralized Animation Controller (100% Complete - NEW)**
-- [x] RequestAnimationFrame loop with 60fps frame rate limiting
-- [x] Priority-based animation queue with concurrent limits
-- [x] 25+ easing functions including elastic, bounce, and spring
-- [x] Global playback controls with variable speed (0.1x to 4x)
-- [x] React hooks for basic animations, tweens, springs, keyframes
-- [x] Real-time performance monitoring and FPS tracking
-- [x] Interactive animation debugger with live controls
-- [x] Spring physics system with configurable parameters
+**Function Validation System (100% Complete - NEW)**
+- [x] Separate validation logic for functions without START/END requirements
+- [x] Recursive function pattern analysis and base case detection
+- [x] Proper conditional block and loop structure validation
+- [x] Real-time error feedback with detailed descriptions
+- [x] Function definition extraction and parsing
+- [x] Stack overflow and infinite recursion warnings
 
 **Advanced Visualization (100% Complete)**
 - [x] Enhanced YES/NO branching with optimized label positioning
@@ -313,13 +309,13 @@ suggestBlockType(text) {
 - Very long text in blocks may be truncated with ellipsis
 - Complex deeply nested structures may require manual layout adjustment
 - Function parameter parsing relies on specific syntax patterns
-- Animation performance may vary on low-end devices (auto-optimization enabled)
+- Execution visualization focuses on structure rather than actual algorithm logic
 
 **Browser Compatibility**
 - Tested on Chrome, Firefox, Safari, Edge (latest versions)
 - Full functionality requires modern browser with ES6+ support
 - SVG export may have minor rendering differences across browsers
-- Animation features require requestAnimationFrame support (IE11+ not supported)
+- Execution features require modern JavaScript support (ES2020+)
 - Advanced accessibility features work best in modern browsers with full CSS custom property support
 
 ## 🚧 Future Development Roadmap
@@ -439,16 +435,16 @@ npm >= 8.0.0
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/algorithm-visualizer.git
+git clone https://github.com/olereon/algoflow.git
 
 # Navigate to project directory
-cd algorithm-visualizer
+cd algoflow
 
 # Install dependencies
 npm install
 
 # Start development server
-npm start
+npm run dev
 ```
 
 ### Build for Production
@@ -456,20 +452,14 @@ npm start
 # Create optimized production build
 npm run build
 
-# Serve production build locally
-npm run serve
-```
+# Preview production build locally
+npm run preview
 
-### Testing
-```bash
-# Run unit tests
-npm test
+# Type check the project
+npm run typecheck
 
-# Run integration tests
-npm run test:integration
-
-# Generate coverage report
-npm run test:coverage
+# Lint the codebase
+npm run lint
 ```
 
 ## 📖 Usage Examples
@@ -561,31 +551,31 @@ Function traverse(node)::
 End function::
 ```
 
-## 🎬 Interactive Animation Demo
+## 🎬 Interactive Execution Demo
 
-The application includes a comprehensive **Enhanced Depth Visualization Demo** accessible via the "Animation Demo" button in the header. This demo showcases:
+The application includes a comprehensive **Stack Visualization Demo** accessible via the "Stack Demo" button in the header. This demo showcases:
 
 ### 🎯 Demo Features
-- **Deep Recursion Simulation**: factorial(15) creating 16 stack frames
-- **Real-time Depth Visualization**: Watch color gradients change as stack grows
-- **Smart Collapsible Sections**: Auto-collapse deep sections for performance
-- **Interactive Controls**: Play/pause/reset with speed controls
-- **Live Accessibility Testing**: Real-time contrast ratio validation
-- **5 Color Schemes**: Switch between Blue, Warm, Cool, Rainbow, and Monochrome themes
-- **Performance Monitoring**: See adaptive optimization in action
+- **Recursive Function Visualization**: factorial function with parameter tracking
+- **Interactive Stack Frames**: Click function blocks to see stack visualization
+- **Function Definition Popups**: Movable windows showing function implementations
+- **Execution Tracking**: Step-by-step execution with visual feedback
+- **Call Stack Depth**: Real-time visualization of function call depth
+- **Parameter Transformation**: See how values change through recursive calls
 
 ### 🎮 How to Use
-1. **Click "Animation Demo"** in the top-right corner of the main application
-2. **Use Controls**: Play/pause/reset the factorial recursion animation
-3. **Experiment with Settings**: Toggle accessibility options and color schemes
-4. **View Legend**: See depth levels and their visual indicators
-5. **Test Accessibility**: View real-time contrast ratios and compliance levels
+1. **Click "Stack Demo"** in the top-right corner of the main application
+2. **View the Flowchart**: See the recursive factorial algorithm layout
+3. **Click Function Blocks**: Click on function call blocks to see popup definitions
+4. **Use Execution Controls**: Play/pause/step through the algorithm execution
+5. **View Stack Panel**: Toggle the integrated stack visualization panel
+6. **Explore Function Definitions**: Move and resize function popup windows
 
 ### 🔧 What You'll Learn
-- How depth gradients improve stack visualization
-- The importance of accessibility in technical applications
-- Performance optimization techniques for large data sets
-- Smart UI patterns for handling complex nested structures
+- How recursive functions are visualized in flowcharts
+- The relationship between function calls and stack frames
+- Interactive algorithm execution and debugging techniques
+- Professional flowchart design patterns for complex algorithms
 
 ## 🤝 Contributing
 
@@ -623,10 +613,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support & Contact
 
-- **Documentation**: [Project Wiki](https://github.com/your-username/algorithm-visualizer/wiki)
-- **Issues**: [GitHub Issues](https://github.com/your-username/algorithm-visualizer/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/algorithm-visualizer/discussions)
-- **Email**: support@algorithmvisualizer.com
+- **Documentation**: [Project Wiki](https://github.com/olereon/algoflow/wiki)
+- **Issues**: [GitHub Issues](https://github.com/olereon/algoflow/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/olereon/algoflow/discussions)
+- **Repository**: [GitHub Repository](https://github.com/olereon/algoflow)
 
 ---
 
